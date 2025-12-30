@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freddy Manuel - Portfolio</title>
+    
+    <style>
+        @font-face {
+            font-family: 'LEDLIGHT';
+            src: url('fonts/LEDLIGHT.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            font-family: 'LEDLIGHT', 'Courier New', monospace;
+            background-color: #000;
+        }
+
+        /* Video Background */
+        #video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+        }
+
+        /* Main Container */
+        .splash-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Logo with Multiply blend mode - DOUBLE SIZE */
+        .logo-wrapper {
+            width: 90vw;
+            max-width: 1400px;
+            margin-bottom: 3rem;
+        }
+
+        #main-logo {
+            width: 100%;
+            height: auto;
+            mix-blend-mode: color-dodge;  /* THIS IS THE KEY LINE */
+            opacity: 1;
+        }
+
+        /* Enter Button with Brand Color #F9FF25 */
+        .enter-button {
+            background: none;
+            border: none;
+            font-family: 'LEDLIGHT', 'Courier New', monospace;
+            font-size: 26px;
+            color: #F9FF25;
+            letter-spacing: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-shadow: 
+                0 0 10px #F9FF25,
+                0 0 20px #F9FF25,
+                0 0 30px #F9FF25,
+                0 0 40px #F9FF25,
+                0 0 70px rgba(249, 255, 37, 0.5);
+            transition: all 0.1s ease;
+            animation: flicker 4s infinite;
+            padding: 1rem 2rem;
+        }
+
+        .enter-button:hover {
+            color: #FFFFFF;
+            text-shadow: 
+                0 0 20px #F9FF25,
+                0 0 40px #F9FF25,
+                0 0 60px #F9FF25,
+                0 0 80px #F9FF25,
+                0 0 120px rgba(249, 255, 37, 0.8);
+            transform: scale(1.05);
+        }
+
+        /* Glitchy Neon Flicker Animation */
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 1;
+                text-shadow: 
+                    0 0 10px #F9FF25,
+                    0 0 20px #F9FF25,
+                    0 0 30px #F9FF25,
+                    0 0 40px #F9FF25,
+                    0 0 70px rgba(249, 255, 37, 0.5);
+            }
+            20%, 24%, 55% {
+                opacity: 0.3;
+                text-shadow: none;
+            }
+            22% {
+                opacity: 0.6;
+                text-shadow: 
+                    0 0 5px #F9FF25,
+                    0 0 10px #F9FF25;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo-wrapper {
+                width: 85vw;
+            }
+            
+            .enter-button {
+                font-size: 20px;
+                letter-spacing: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-wrapper {
+                width: 95vw;
+            }
+            
+            .enter-button {
+                font-size: 18px;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Background Video -->
+    <video id="video-background" autoplay muted loop playsinline>
+        <source src="videos/home_bg.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Splash Content -->
+    <div class="splash-container">
+        <div class="logo-wrapper">
+            <img id="main-logo" src="images/main_logo_y.svg" alt="Freddy Manuel">
+        </div>
+        
+        <button class="enter-button" onclick="enterSite()">ENTER</button>
+    </div>
+
+    <script>
+        // Ensure video plays on all browsers
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('video-background');
+            video.play().catch(err => {
+                console.log("Autoplay prevented:", err);
+            });
+        });
+
+        // Navigation to main homepage
+        function enterSite() {
+            window.location.href = 'index.html';
+        }
+
+        // Additional random flicker effect for glitchy neon
+        const enterBtn = document.querySelector('.enter-button');
+        
+        function extraFlicker() {
+            if (Math.random() > 0.85) {
+                const flickerIntensity = Math.random();
+                enterBtn.style.opacity = flickerIntensity > 0.5 ? '0.2' : '1';
+                
+                setTimeout(() => {
+                    enterBtn.style.opacity = '1';
+                }, Math.random() * 150);
+            }
+        }
+        
+        setInterval(extraFlicker, 150);
+    </script>
+
+</body>
+</html>

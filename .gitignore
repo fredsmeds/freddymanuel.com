@@ -1,0 +1,19 @@
+# Ignorar carpetas pesadas
+videos/
+images/
+MATERIAL/
+fonts/
+assets/videos/
+assets/images/
+assets/fonts/
+
+# Ignorar archivos pesados sueltos
+*.mp4
+*.mov
+*.webm
+*.zip
+*.rar
+
+# Sistema
+.DS_Store
+Thumbs.db
