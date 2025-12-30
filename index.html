@@ -2874,7 +2874,6 @@
         .tech-monogram-footer img {
             width: 100px;
             height: auto;
-            opacity: 0.6;
         }
 
         /* Responsive - Tech Page */
@@ -3090,7 +3089,6 @@
         .olympian-monogram-footer img {
             width: 100px;
             height: auto;
-            opacity: 0.6;
         }
 
         /* Responsive - Olympian Section */
@@ -3551,7 +3549,6 @@
         .elprimo-monogram-footer img {
             width: 100px;
             height: auto;
-            opacity: 0.6;
         }
 
         /* Responsive - El Primo Section */
@@ -3679,6 +3676,358 @@
             }
             .elprimo-banner-section {
                 min-height: 400px;
+            }
+        }
+
+        /* ===================================
+           MASTO SECTION
+           =================================== */
+
+        /* Azonix Font */
+        @font-face {
+            font-family: 'Azonix';
+            src: url('fonts/Azonix.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        .masto-section {
+            background-color: #000;
+            width: 100%;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Video Background */
+        .masto-video-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.5;
+            z-index: 0;
+            pointer-events: none;
+            top: 0;
+            left: 0;
+        }
+
+        .masto-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Hero Section with Logo */
+        .masto-hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 100px;
+        }
+
+        .masto-logo-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .masto-logo-container img {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .masto-link {
+            font-family: 'SpartanBold', Arial, sans-serif;
+            font-size: 24px;
+            color: #70ac8b;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            margin-bottom: 60px;
+            transition: all 0.3s ease;
+            font-weight: 700;
+        }
+
+        .masto-link:hover {
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        /* Project Info */
+        .masto-project-info {
+            padding: 80px 100px;
+            background: #000;
+        }
+
+        .masto-title {
+            font-family: 'Azonix', Arial, sans-serif;
+            font-size: 48px;
+            font-weight: 400;
+            color: #fff;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+        }
+
+        .masto-title span {
+            color: #70ac8b;
+        }
+
+        .masto-subtitle {
+            font-family: 'SpartanBold', Arial, sans-serif;
+            font-size: 18px;
+            color: #70ac8b;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .masto-description {
+            font-family: 'SpartanBold', Arial, sans-serif;
+            font-size: 18px;
+            color: #fff;
+            line-height: 1.8;
+            max-width: 1000px;
+            margin: 0 auto 60px auto;
+            text-align: justify;
+        }
+
+        /* Services Grid */
+        .masto-services {
+            padding: 80px 100px;
+            background: #000;
+        }
+
+        .masto-services-title {
+            font-family: 'Azonix', Arial, sans-serif;
+            font-size: 42px;
+            color: #fff;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 60px;
+            letter-spacing: 2px;
+        }
+
+        .masto-services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .masto-service-card {
+            background: #111;
+            padding: 40px;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .masto-service-card:hover {
+            border-color: #70ac8b;
+            transform: translateY(-5px);
+        }
+
+        .masto-service-icon {
+            font-size: 48px;
+            color: #70ac8b;
+            margin-bottom: 20px;
+        }
+
+        .masto-service-name {
+            font-family: 'Azonix', Arial, sans-serif;
+            font-size: 20px;
+            color: #fff;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .masto-service-desc {
+            font-family: 'SpartanBold', Arial, sans-serif;
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        /* Tech Stack */
+        .masto-tech {
+            padding: 80px 100px;
+            background: #000;
+        }
+
+        .masto-tech-title {
+            font-family: 'Azonix', Arial, sans-serif;
+            font-size: 42px;
+            color: #fff;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+        }
+
+        .masto-tech-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .masto-tech-item {
+            font-family: 'SpartanBold', Arial, sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        .masto-tech-item::after {
+            content: '•';
+            position: absolute;
+            right: -10px;
+            color: #70ac8b;
+            font-weight: 900;
+        }
+
+        .masto-tech-item:last-child::after {
+            content: '';
+        }
+
+        /* Key Features */
+        .masto-features {
+            padding: 80px 100px;
+            background: #000;
+        }
+
+        .masto-features-title {
+            font-family: 'Azonix', Arial, sans-serif;
+            font-size: 42px;
+            color: #70ac8b;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+        }
+
+        .masto-features-text {
+            font-family: 'SpartanBold', Arial, sans-serif;
+            font-size: 18px;
+            color: #fff;
+            line-height: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .masto-features-text strong {
+            color: #70ac8b;
+            font-weight: 900;
+        }
+
+        /* Monogram Footer */
+        .masto-monogram-footer {
+            padding: 60px 0 80px 0;
+            text-align: center;
+            background: #000;
+        }
+
+        .masto-monogram-footer img {
+            width: 100px;
+            height: auto;
+        }
+
+        /* Responsive - Masto Section */
+        @media (max-width: 1400px) {
+            .masto-hero,
+            .masto-project-info,
+            .masto-services,
+            .masto-tech,
+            .masto-features {
+                padding: 60px 80px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .masto-hero,
+            .masto-project-info,
+            .masto-services,
+            .masto-tech,
+            .masto-features {
+                padding: 60px 60px;
+            }
+            .masto-services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .masto-hero,
+            .masto-project-info,
+            .masto-services,
+            .masto-tech,
+            .masto-features {
+                padding: 40px 30px;
+            }
+            .masto-hero {
+                min-height: 70vh;
+            }
+            .masto-link {
+                font-size: 20px;
+            }
+            .masto-title {
+                font-size: 32px;
+            }
+            .masto-subtitle,
+            .masto-description {
+                font-size: 16px;
+            }
+            .masto-services-title,
+            .masto-tech-title,
+            .masto-features-title {
+                font-size: 28px;
+            }
+            .masto-tech-item {
+                font-size: 16px;
+                padding: 0 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .masto-hero,
+            .masto-project-info,
+            .masto-services,
+            .masto-tech,
+            .masto-features {
+                padding: 30px 20px;
+            }
+            .masto-hero {
+                min-height: 60vh;
+            }
+            .masto-link {
+                font-size: 18px;
+            }
+            .masto-title {
+                font-size: 24px;
+            }
+            .masto-subtitle,
+            .masto-description {
+                font-size: 15px;
+            }
+            .masto-services-title,
+            .masto-tech-title,
+            .masto-features-title {
+                font-size: 24px;
+            }
+            .masto-tech-item {
+                font-size: 14px;
+                padding: 0 10px;
             }
         }
     </style>
@@ -4897,11 +5246,97 @@ user@machine:~$ █</div>
                 </div>
             </section>
 
-            <!-- MASTO SECTION (Placeholder) -->
-            <section class="tech-project-section" id="tech-masto" style="min-height: 50vh;">
-                <div class="tech-terminal-text">[INFO] PROJECT: MASTO
-[STATUS] COMING SOON...
-user@machine:~$ █</div>
+            <!-- MASTO SECTION -->
+            <section class="masto-section" id="tech-masto">
+                <!-- Video Background -->
+                <video class="masto-video-bg" autoplay loop muted playsinline>
+                    <source src="videos/bg1.mp4" type="video/mp4">
+                </video>
+
+                <div class="masto-content">
+                    <!-- Hero with Logo -->
+                    <div class="masto-hero">
+                        <div class="masto-logo-container">
+                            <img src="images/mastologo.svg" alt="Masto Inc Logo">
+                        </div>
+
+                        <a href="https://mastoinc.com" target="_blank" class="masto-link">mastoinc.com</a>
+                    </div>
+
+                    <!-- Project Info -->
+                    <div class="masto-project-info">
+                        <h2 class="masto-title">M<span>A</span>STO INC.</h2>
+                        <p class="masto-subtitle">Business Consulting | Web Design & Development | Brand Identity</p>
+                        
+                        <p class="masto-description">
+                            When Raúl Matos approached me to create a digital presence for Masto Inc., his business consulting firm, I saw an opportunity to design more than just a website—I wanted to craft a complete brand identity that reflected professionalism, trust, and strategic clarity. Founded on the principle of empowering small business owners with organization and compliance, Masto Inc. needed a web presence that communicated authority while remaining approachable and accessible.
+                            <br><br>
+                            I began by designing the logo from scratch, creating a clean, modern mark that balanced sophistication with simplicity. The color palette was strategically chosen: black and white establish authority and professionalism, while the dollar green accent (#70ac8b) subtly reinforces the firm's financial focus—bookkeeping, compliance, and business growth. The Azonix typeface serves dual purposes: its bold, geometric letterforms project confidence, while the upward-pointing "A" (the only green element in the logo) creates a visual metaphor for ascending revenue and business success. Paired with Poppins for readability, the result is a cohesive visual language that positions Masto Inc. as a trusted partner in financial empowerment.
+                            <br><br>
+                            For the website, I developed a responsive single-page design with video backgrounds, smooth scrolling sections, and integrated functionality including a PHP-powered contact form and WhatsApp business integration for instant client communication. The site clearly presents Masto Inc.'s four core services—Business Consulting, Bookkeeping, Minority Certification, and Grant Support—while maintaining a streamlined, professional user experience.
+                        </p>
+                    </div>
+
+                    <!-- Services Showcase -->
+                    <div class="masto-services">
+                        <h3 class="masto-services-title">Services Highlighted</h3>
+                        <div class="masto-services-grid">
+                            <div class="masto-service-card">
+                                <div class="masto-service-icon"><i class="fas fa-users-gear"></i></div>
+                                <div class="masto-service-name">Business Consulting</div>
+                                <p class="masto-service-desc">Personalized consulting to help business owners understand their responsibilities, benefits, and how to structure and operate effectively within the U.S. system.</p>
+                            </div>
+                            <div class="masto-service-card">
+                                <div class="masto-service-icon"><i class="fas fa-book"></i></div>
+                                <div class="masto-service-name">Bookkeeping</div>
+                                <p class="masto-service-desc">Accurate recording and organization of financial transactions in compliance with Generally Accepted Accounting Principles (GAAP).</p>
+                            </div>
+                            <div class="masto-service-card">
+                                <div class="masto-service-icon"><i class="fas fa-globe"></i></div>
+                                <div class="masto-service-name">Minority Certification</div>
+                                <p class="masto-service-desc">Guidance and documentation assistance for businesses seeking minority-owned certification at the city, state, or federal level.</p>
+                            </div>
+                            <div class="masto-service-card">
+                                <div class="masto-service-icon"><i class="fas fa-bullseye"></i></div>
+                                <div class="masto-service-name">Grant Support</div>
+                                <p class="masto-service-desc">Support in identifying and preparing required documentation for local, state, or federal grant applications.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stack -->
+                    <div class="masto-tech">
+                        <h3 class="masto-tech-title">Technical Stack</h3>
+                        <div class="masto-tech-list">
+                            <div class="masto-tech-item">HTML/CSS</div>
+                            <div class="masto-tech-item">JavaScript</div>
+                            <div class="masto-tech-item">PHP</div>
+                            <div class="masto-tech-item">Responsive Design</div>
+                            <div class="masto-tech-item">Video Integration</div>
+                            <div class="masto-tech-item">Google Analytics</div>
+                            <div class="masto-tech-item">WhatsApp API</div>
+                            <div class="masto-tech-item">Email Integration</div>
+                        </div>
+                    </div>
+
+                    <!-- Key Features -->
+                    <div class="masto-features">
+                        <h3 class="masto-features-title">What This Project Demonstrates</h3>
+                        <div class="masto-features-text">
+                            <strong>Brand Identity Design:</strong> Created complete logo and visual identity from concept to final implementation, including strategic color symbolism (dollar green for financial success) and typographic metaphor (upward-pointing "A" representing business growth)<br><br>
+                            <strong>UX/UI Design:</strong> Single-page architecture with smooth scrolling, video backgrounds, and strategic content hierarchy<br><br>
+                            <strong>Full-Stack Development:</strong> PHP backend for contact form processing, email integration, WhatsApp business integration<br><br>
+                            <strong>Responsive Design:</strong> Mobile-first approach ensuring perfect display across all devices<br><br>
+                            <strong>Business Communication:</strong> Integrated multiple contact channels (form, WhatsApp, direct email) for optimal client engagement<br><br>
+                            <strong>Professional Web Presence:</strong> Clean, authoritative design that builds trust and clearly communicates service value
+                        </div>
+                    </div>
+
+                    <!-- White Monogram Footer -->
+                    <div class="masto-monogram-footer">
+                        <img src="images/monogram_dollar.svg" alt="FM Monogram">
+                    </div>
+                </div>
             </section>
 
             <!-- EL PRIMO SECTION -->
@@ -5051,7 +5486,7 @@ user@machine:~$ █</div>
 
                     <!-- White Monogram Footer -->
                     <div class="elprimo-monogram-footer">
-                        <img src="images/monogram_white.svg" alt="FM Monogram">
+                        <img src="images/monogram_yellow.svg" alt="FM Monogram">
                     </div>
                 </div>
             </section>
