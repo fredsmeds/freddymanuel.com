@@ -1,11 +1,34 @@
 <?php
 header('Content-Type: application/json');
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/php_errors.log');
 
-// Load PHPMailer - MANUAL METHOD
+// Load environment variables from .env file
+function loadEnv($filePath) {
+    if (!file_exists($filePath)) {
+        error_log("ENV file not found: $filePath");
+        return false;
+    }
+    $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') === false) continue;
+        
+        list($name, $value) = explode('=', $line, 2);
+        $name = trim($name);
+        $value = trim($value);
+        
+        // Remove quotes if present
+        $value = trim($value, '"\'');
+        
+        $_ENV[$name] = $value;
+        error_log("ENV: $name loaded");
+    }
+    return true;
+}
+
+// Load .env file
+$envLoaded = loadEnv(__DIR__ . '/.env');
+
+// Load PHPMailer
 require __DIR__ . '/PHPMailer/src/Exception.php';
 require __DIR__ . '/PHPMailer/src/PHPMailer.php';
 require __DIR__ . '/PHPMailer/src/SMTP.php';
@@ -13,179 +36,159 @@ require __DIR__ . '/PHPMailer/src/SMTP.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// ===== CONFIGURATION =====
-$GMAIL_USERNAME = 'fmroldanrivero@gmail.com';
-$GMAIL_APP_PASSWORD = 'ndjidenozkbhdxr'; // Gmail App Password (no spaces)
-$TO_EMAIL = 'fmroldanrivero@gmail.com';
-$FROM_EMAIL = 'fmroldanrivero@gmail.com';
-$FROM_NAME = 'Freddy Manuel Portfolio';
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    
+    // 1. Gmail credentials from environment
+    $gmail_user = $_ENV['GMAIL_USER'] ?? '';
+    $gmail_pass = $_ENV['GMAIL_PASSWORD'] ?? '';
+    $admin_email = $_ENV['ADMIN_EMAIL'] ?? $gmail_user;
+    
+    // 2. Collect form data
+    $name = strip_tags(trim($_POST["name"]));
+    $email = filter_var(trim($_POST["email"]), FILTER_SANITIZE_EMAIL);
+    $phone = strip_tags(trim($_POST["phone"]));
+    $project = strip_tags(trim($_POST["project-type"]));
+    $message = strip_tags(trim($_POST["message"]));
+    $privacy = isset($_POST["privacy"]);
+    
+    // 3. Validation
+    if (empty($name) || empty($email) || empty($message) || !$privacy) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Please fill in all required fields'
+        ]);
+        exit;
+    }
+    
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Invalid email format'
+        ]);
+        exit;
+    }
 
-// Sanitize function
-function sanitize_input($data) {
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
-    return $data;
-}
-
-// Check POST request
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    // Check if Gmail credentials are configured
+    if (empty($gmail_user) || empty($gmail_pass)) {
+        // Log to error file for debugging
+        error_log("Gmail credentials missing - User: " . (!empty($gmail_user) ? "OK" : "MISSING") . " | Pass: " . (!empty($gmail_pass) ? "OK" : "MISSING"));
+        echo json_encode([
+            'success' => false,
+            'message' => 'Email system is not properly configured. Please try again later.'
+        ]);
+        exit;
+    }
+    
+    // 4. Project type mapping
+    $project_types = [
+        'ai-ml' => 'AI & Machine Learning',
+        'web-dev' => 'Web Development & UX/UI',
+        'branding' => 'Brand Identity & Strategy',
+        'creative-production' => 'Creative Production',
+        'art-direction' => 'Art Direction & Consultation',
+        'performance' => 'Performance & Acting',
+        'other' => 'Something else'
+    ];
+    $project_text = isset($project_types[$project]) ? $project_types[$project] : ($project ?: 'Not specified');
+    
+    try {
+        // 5. Create PHPMailer instance
+        $mail = new PHPMailer(true);
+        
+        // Enable debug output (comment out in production)
+        // $mail->SMTPDebug = 2;
+        
+        // 6. Gmail SMTP settings
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = $gmail_user;
+        $mail->Password = $gmail_pass;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+        $mail->Timeout = 30;
+        $mail->SMTPKeepAlive = true;
+        
+        // 7. Email to YOU (admin)
+        $mail->setFrom($gmail_user, 'Freddy Manuel Portfolio');
+        $mail->addAddress($admin_email, 'Freddy Manuel');
+        $mail->addReplyTo($email, $name);
+        
+        $mail->Subject = "New Contact Form: $name";
+        $mail->Body = "New message from freddymanuel.com\n\n" .
+                      "Name: $name\n" .
+                      "Email: $email\n" .
+                      "Phone: " . ($phone ?: 'Not provided') . "\n" .
+                      "Project: $project_text\n\n" .
+                      "Message:\n$message\n\n" .
+                      "---\n" .
+                      "Sent: " . date('Y-m-d H:i:s');
+        
+        $mail->send();
+        
+        // 8. Log to CSV file
+        $csvFile = __DIR__ . '/submissions.csv';
+        $csvExists = file_exists($csvFile);
+        
+        $csvData = [
+            date('Y-m-d H:i:s'),
+            $name,
+            $email,
+            $phone ?: 'N/A',
+            $project_text,
+            $message
+        ];
+        
+        $handle = fopen($csvFile, 'a');
+        if ($csvExists === false) {
+            // Write header if file is new
+            fputcsv($handle, ['Timestamp', 'Name', 'Email', 'Phone', 'Project Type', 'Message']);
+        }
+        fputcsv($handle, $csvData);
+        fclose($handle);
+        
+        // 9. Confirmation email to USER
+        $mail->clearAddresses();
+        $mail->clearReplyTos();
+        $mail->addAddress($email, $name);
+        $mail->addReplyTo($gmail_user, 'Freddy Manuel');
+        
+        $mail->Subject = "Thank you for contacting Freddy Manuel";
+        $mail->Body = "Hi $name,\n\n" .
+                      "Thank you for reaching out! I'll respond within 48 hours.\n\n" .
+                      "Your message:\n$message\n\n" .
+                      "Best regards,\n" .
+                      "Freddy Manuel Roldán Rivero\n" .
+                      "AI Engineer & Conceptual Artist\n\n" .
+                      "fmroldanrivero@gmail.com\n" .
+                      "https://freddymanuel.com";
+        
+        $mail->send();
+        
+        // 9. Success!
+        echo json_encode([
+            'success' => true,
+            'message' => 'Message sent successfully! Check your email for confirmation.'
+        ]);
+        
+    } catch (Exception $e) {
+        error_log("PHPMailer Error: " . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'Failed to send: ' . $e->getMessage()
+        ]);
+    } catch (Throwable $e) {
+        error_log("Unexpected Error: " . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'An unexpected error occurred. Please try again later.'
+        ]);
+    }
+    
+} else {
     echo json_encode([
         'success' => false,
         'message' => 'Invalid request method'
-    ]);
-    exit;
-}
-
-// Get and sanitize form data
-$name = isset($_POST['name']) ? sanitize_input($_POST['name']) : '';
-$email = isset($_POST['email']) ? sanitize_input($_POST['email']) : '';
-$phone = isset($_POST['phone']) ? sanitize_input($_POST['phone']) : '';
-$project = isset($_POST['project-type']) ? sanitize_input($_POST['project-type']) : 'Not specified';
-$message = isset($_POST['message']) ? sanitize_input($_POST['message']) : '';
-$privacy = isset($_POST['privacy']);
-
-// Validation
-$errors = [];
-
-if (empty($name)) {
-    $errors[] = 'Name is required';
-}
-
-if (empty($email)) {
-    $errors[] = 'Email is required';
-} elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $errors[] = 'Invalid email format';
-}
-
-if (empty($message)) {
-    $errors[] = 'Message is required';
-}
-
-if (!$privacy) {
-    $errors[] = 'You must agree to the Privacy Policy and Terms of Use';
-}
-
-// Return validation errors
-if (!empty($errors)) {
-    echo json_encode([
-        'success' => false,
-        'message' => implode(', ', $errors)
-    ]);
-    exit;
-}
-
-// Project type mapping
-$project_types = [
-    'ai-ml' => 'AI & Machine Learning',
-    'web-dev' => 'Web Development & UX/UI',
-    'branding' => 'Brand Identity & Strategy',
-    'creative-production' => 'Creative Production',
-    'art-direction' => 'Art Direction & Consultation',
-    'performance' => 'Performance & Acting',
-    'other' => 'Something else'
-];
-$project_text = isset($project_types[$project]) ? $project_types[$project] : $project;
-
-try {
-    // ===== EMAIL TO ADMIN (YOU) =====
-    $mail_admin = new PHPMailer(true);
-    
-    // SMTP Configuration
-    $mail_admin->isSMTP();
-    $mail_admin->Host = 'smtp.gmail.com';
-    $mail_admin->SMTPAuth = true;
-    $mail_admin->Username = $GMAIL_USERNAME;
-    $mail_admin->Password = $GMAIL_APP_PASSWORD;
-    $mail_admin->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail_admin->Port = 587;
-    $mail_admin->CharSet = 'UTF-8';
-    
-    // Enable verbose debug output (disable in production)
-    // $mail_admin->SMTPDebug = 2; // Uncomment for debugging
-    
-    // Email settings
-    $mail_admin->setFrom($FROM_EMAIL, $FROM_NAME);
-    $mail_admin->addAddress($TO_EMAIL, 'Freddy Manuel');
-    $mail_admin->addReplyTo($email, $name);
-    
-    $mail_admin->Subject = "New Contact Form Submission: $name";
-    $mail_admin->Body = 
-        "You have received a new message from freddymanuel.com\n\n" .
-        "═══════════════════════════════════\n" .
-        "CONTACT DETAILS\n" .
-        "═══════════════════════════════════\n\n" .
-        "Name: $name\n" .
-        "Email: $email\n" .
-        "Phone: " . ($phone ?: 'Not provided') . "\n" .
-        "Project Type: $project_text\n\n" .
-        "═══════════════════════════════════\n" .
-        "MESSAGE\n" .
-        "═══════════════════════════════════\n\n" .
-        "$message\n\n" .
-        "═══════════════════════════════════\n" .
-        "Sent: " . date('l, F j, Y - g:i A') . "\n" .
-        "IP Address: " . $_SERVER['REMOTE_ADDR'] . "\n" .
-        "═══════════════════════════════════";
-    
-    $mail_admin->send();
-    
-    // ===== CONFIRMATION EMAIL TO USER =====
-    $mail_user = new PHPMailer(true);
-    
-    // SMTP Configuration
-    $mail_user->isSMTP();
-    $mail_user->Host = 'smtp.gmail.com';
-    $mail_user->SMTPAuth = true;
-    $mail_user->Username = $GMAIL_USERNAME;
-    $mail_user->Password = $GMAIL_APP_PASSWORD;
-    $mail_user->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail_user->Port = 587;
-    $mail_user->CharSet = 'UTF-8';
-    
-    // Email settings
-    $mail_user->setFrom($FROM_EMAIL, $FROM_NAME);
-    $mail_user->addAddress($email, $name);
-    $mail_user->addReplyTo($TO_EMAIL, 'Freddy Manuel');
-    
-    $mail_user->Subject = "Thank you for contacting Freddy Manuel";
-    $mail_user->Body = 
-        "Hi $name,\n\n" .
-        "Thank you for reaching out! I've received your message and will respond within 48 hours.\n\n" .
-        "═══════════════════════════════════\n" .
-        "YOUR MESSAGE\n" .
-        "═══════════════════════════════════\n\n" .
-        "Project Type: $project_text\n\n" .
-        "$message\n\n" .
-        "═══════════════════════════════════\n\n" .
-        "Best regards,\n\n" .
-        "Freddy Manuel Roldán Rivero\n" .
-        "AI Engineer & Conceptual Artist\n\n" .
-        "Email: fmroldanrivero@gmail.com\n" .
-        "Portfolio: https://freddymanuel.com\n" .
-        "LinkedIn: https://www.linkedin.com/in/freddyrivero-aiengineer/\n" .
-        "GitHub: https://github.com/fredsmeds\n\n" .
-        "═══════════════════════════════════";
-    
-    $mail_user->send();
-    
-    // Success response
-    echo json_encode([
-        'success' => true,
-        'message' => 'Message sent successfully! Check your email for confirmation.'
-    ]);
-    
-} catch (Exception $e) {
-    // Log the detailed error
-    error_log("PHPMailer Error: " . $e->getMessage());
-    if (isset($mail_admin)) {
-        error_log("SMTP Error Info: " . $mail_admin->ErrorInfo);
-    }
-    
-    // Return user-friendly error
-    echo json_encode([
-        'success' => false,
-        'message' => 'Failed to send message. Please try emailing directly: fmroldanrivero@gmail.com'
     ]);
 }
 ?>
