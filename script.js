@@ -471,4 +471,70 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Load about page videos immediately
             loadVideosForPage('about');
+        });// CONTACT FORM HANDLING
+// Add this to the existing script.js file
+
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contact-form');
+    const formStatus = document.getElementById('form-status');
+    
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Disable submit button
+            const submitButton = contactForm.querySelector('.form-submit');
+            const originalButtonText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'SENDING...';
+            
+            // Clear previous status
+            formStatus.style.display = 'none';
+            formStatus.className = 'form-status';
+            
+            // Get form data
+            const formData = new FormData(contactForm);
+            
+            // Send via fetch API
+            fetch('send-contact.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Re-enable button
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
+                
+                // Show status message
+                if (data.success) {
+                    formStatus.textContent = data.message;
+                    formStatus.className = 'form-status success';
+                    formStatus.style.display = 'block';
+                    
+                    // Reset form
+                    contactForm.reset();
+                    
+                    // Scroll to status message
+                    formStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    formStatus.textContent = data.message;
+                    formStatus.className = 'form-status error';
+                    formStatus.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                // Re-enable button
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
+                
+                // Show error
+                formStatus.textContent = 'Sorry, there was an error sending your message. Please try again or email directly: fmroldanrivero@gmail.com';
+                formStatus.className = 'form-status error';
+                formStatus.style.display = 'block';
+                
+                console.error('Form submission error:', error);
+            });
         });
+    }
+});
