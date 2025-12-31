@@ -6,7 +6,7 @@ fonts/
 assets/videos/
 assets/images/
 assets/fonts/
-
+PHPMailer/
 # Ignorar archivos pesados sueltos
 *.mp4
 *.mov
