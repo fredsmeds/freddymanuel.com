@@ -9,10 +9,275 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- SPLASH SCREEN STYLES -->
+    <style>
+        /* Splash Screen Container */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #000;
+            pointer-events: auto;
+        }
+        
+        #splash-screen.hidden {
+            display: none;
+        }
+        
+        /* Video Background */
+        #video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+        }
+        
+        /* Main Container */
+        .splash-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        
+        /* Logo - EXACT FROM SPLASH.HTML */
+        .logo-wrapper {
+            width: 90vw;
+            max-width: 1400px;
+            margin-bottom: 3rem;
+            pointer-events: auto;
+        }
+        
+        #main-logo {
+            width: 100%;
+            height: auto;
+            mix-blend-mode: color-dodge;  /* THIS IS THE KEY LINE */
+            opacity: 1;
+        }
+        
+        /* Enter Button - EXACT FROM SPLASH.HTML + CLICKABILITY FIX */
+        .enter-button {
+            position: relative;
+            z-index: 100;
+            pointer-events: auto;
+            background: none;
+            border: none;
+            font-family: 'LEDLIGHT', 'Courier New', monospace;
+            font-size: 26px;
+            color: #F9FF25;
+            letter-spacing: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-shadow: 
+                0 0 10px #F9FF25,
+                0 0 20px #F9FF25,
+                0 0 30px #F9FF25,
+                0 0 40px #F9FF25,
+                0 0 70px rgba(249, 255, 37, 0.5);
+            transition: all 0.1s ease;
+            animation: flicker 4s infinite;
+            padding: 1rem 2rem;
+        }
+        
+        .enter-button:hover {
+            color: #FFFFFF;
+            text-shadow: 
+                0 0 20px #F9FF25,
+                0 0 40px #F9FF25,
+                0 0 60px #F9FF25,
+                0 0 80px #F9FF25,
+                0 0 120px rgba(249, 255, 37, 0.8);
+            transform: scale(1.05);
+        }
+        
+        /* Glitchy Neon Flicker Animation - EXACT FROM SPLASH.HTML */
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 1;
+                text-shadow: 
+                    0 0 10px #F9FF25,
+                    0 0 20px #F9FF25,
+                    0 0 30px #F9FF25,
+                    0 0 40px #F9FF25,
+                    0 0 70px rgba(249, 255, 37, 0.5);
+            }
+            20%, 24%, 55% {
+                opacity: 0.3;
+                text-shadow: none;
+            }
+            22% {
+                opacity: 0.6;
+                text-shadow: 
+                    0 0 5px #F9FF25,
+                    0 0 10px #F9FF25;
+            }
+        }
+        
+        /* Main Content Hidden Initially */
+        #main-content {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        #main-content.visible {
+            opacity: 1;
+            visibility: visible;
+            animation: glitchReveal 0.15s steps(15);
+        }
+        
+        /* RAPID GLITCH ANIMATION */
+        @keyframes glitchReveal {
+            0% { opacity: 0; transform: translate(0, 0) scale(1); clip-path: inset(50% 0 50% 0); }
+            7% { opacity: 1; transform: translate(-60px, 0) scale(2.5); clip-path: inset(0 0 0 0); }
+            13% { opacity: 0; transform: translate(40px, 0) scale(0.5); clip-path: inset(70% 0 20% 0); }
+            20% { opacity: 1; transform: translate(0, -50px) scale(1.8); clip-path: inset(10% 0 80% 0); }
+            27% { opacity: 0; transform: translate(-30px, 30px) scale(0.7); clip-path: inset(0 60% 0 20%); }
+            33% { opacity: 1; transform: translate(70px, 0) scale(2.2); clip-path: inset(30% 0 50% 0); }
+            40% { opacity: 1; transform: translate(0, 0) scale(3); clip-path: inset(0 0 0 0); }
+            47% { opacity: 0; transform: translate(-50px, -30px) scale(0.6); clip-path: inset(60% 0 10% 0); }
+            53% { opacity: 1; transform: translate(50px, 20px) scale(1.5); clip-path: inset(0 40% 0 0); }
+            60% { opacity: 1; transform: translate(0, 0) scale(2.8); clip-path: inset(0 0 0 0); }
+            67% { opacity: 0; transform: translate(-20px, 0) scale(0.8); clip-path: inset(40% 0 40% 0); }
+            73% { opacity: 1; transform: translate(30px, -20px) scale(1.6); clip-path: inset(0 0 70% 0); }
+            80% { opacity: 1; transform: translate(0, 0) scale(1.2); clip-path: inset(0 0 0 0); }
+            87% { opacity: 0; transform: translate(-15px, 15px) scale(1.4); clip-path: inset(80% 0 5% 0); }
+            93% { opacity: 1; transform: translate(10px, 0) scale(1.1); clip-path: inset(0 0 0 0); }
+            100% { opacity: 1; transform: translate(0, 0) scale(1); clip-path: inset(0 0 0 0); }
+        }
+        
+        /* SPLASH SCREEN GLITCH OUT */
+        #splash-screen.glitch-out {
+            animation: splashGlitchOut 0.15s steps(15) forwards;
+        }
+        
+        @keyframes splashGlitchOut {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            7% { opacity: 1; transform: translate(50px, 0) scale(2.3); filter: hue-rotate(180deg); }
+            13% { opacity: 0; transform: translate(-60px, 0) scale(0.5); }
+            20% { opacity: 1; transform: translate(0, -60px) scale(2.8); filter: invert(1); }
+            27% { opacity: 0; transform: translate(40px, 40px) scale(0.6); }
+            33% { opacity: 1; transform: translate(-70px, 0) scale(2); }
+            40% { opacity: 1; transform: translate(0, 0) scale(3.5); }
+            47% { opacity: 0; transform: translate(30px, -30px) scale(0.4); filter: saturate(10); }
+            53% { opacity: 1; transform: translate(-50px, 20px) scale(1.7); }
+            60% { opacity: 0; transform: translate(0, 0) scale(2.5); }
+            67% { opacity: 1; transform: translate(60px, 0) scale(1.9); filter: brightness(5); }
+            73% { opacity: 0; transform: translate(-40px, -20px) scale(0.7); }
+            80% { opacity: 1; transform: translate(20px, 30px) scale(1.3); }
+            87% { opacity: 0; transform: translate(0, 0) scale(2); }
+            93% { opacity: 0; transform: translate(-10px, 10px) scale(0.3); filter: brightness(0); }
+            100% { opacity: 0; transform: scale(0); }
+        }
+        
+        /* RGB Chromatic Aberration */
+        #splash-screen::before,
+        #splash-screen::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+        
+        #splash-screen.glitch-out::before {
+            background: rgba(255, 0, 0, 0.7);
+            animation: rgbSplitRed 0.15s steps(8);
+        }
+        
+        #splash-screen.glitch-out::after {
+            background: rgba(0, 255, 255, 0.7);
+            animation: rgbSplitCyan 0.15s steps(8);
+        }
+        
+        @keyframes rgbSplitRed {
+            0% { opacity: 0; transform: translate(0); }
+            12% { opacity: 1; transform: translate(-100px, 0); }
+            25% { opacity: 0; transform: translate(80px, 0); }
+            37% { opacity: 1; transform: translate(-60px, 0); }
+            50% { opacity: 0; transform: translate(90px, 0); }
+            62% { opacity: 1; transform: translate(-40px, 0); }
+            75% { opacity: 0; transform: translate(50px, 0); }
+            87% { opacity: 1; transform: translate(-20px, 0); }
+            100% { opacity: 0; }
+        }
+        
+        @keyframes rgbSplitCyan {
+            0% { opacity: 0; transform: translate(0); }
+            12% { opacity: 1; transform: translate(100px, 0); }
+            25% { opacity: 0; transform: translate(-80px, 0); }
+            37% { opacity: 1; transform: translate(60px, 0); }
+            50% { opacity: 0; transform: translate(-90px, 0); }
+            62% { opacity: 1; transform: translate(40px, 0); }
+            75% { opacity: 0; transform: translate(-50px, 0); }
+            87% { opacity: 1; transform: translate(20px, 0); }
+            100% { opacity: 0; }
+        }
+        
+        /* Responsive - EXACT FROM SPLASH.HTML */
+        @media (max-width: 768px) {
+            .logo-wrapper {
+                width: 85vw;
+            }
+            
+            .enter-button {
+                font-size: 20px;
+                letter-spacing: 6px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo-wrapper {
+                width: 95vw;
+            }
+            
+            .enter-button {
+                font-size: 18px;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Sticky Navigation Header -->
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+        <!-- Background Video -->
+        <video id="video-background" autoplay muted loop playsinline>
+            <source src="videos/home_bg.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+
+        <!-- Splash Content -->
+        <div class="splash-container">
+            <div class="logo-wrapper">
+                <img id="main-logo" src="images/main_logo_y.svg" alt="Freddy Manuel">
+            </div>
+            
+            <button class="enter-button" id="enter-btn">ENTER</button>
+        </div>
+    </div>
+
+    <!-- MAIN PORTFOLIO CONTENT -->
+    <div id="main-content">
+        <!-- Sticky Navigation Header -->
     <header class="sticky-header">
         <div class="nav-item-wrapper">
             <div class="nav-item" data-page="about">
@@ -63,8 +328,7 @@
             <img src="images/Services.svg" alt="Services">
         </div>
     </header>
-
-    <!-- Mobile Menu Button -->
+    
     <button class="menu-toggle" id="menuToggle" type="button">
         <span></span>
         <span></span>
@@ -161,10 +425,10 @@
                     
                     <div class="statement-text">
                         <p>My work is a continuous self-portrait, an attempt to map the territories of the psyche and identity in an age defined by mass media. I don't create from theory; I create from lived experience. Each piece is a necessary act of processing the world, a way to materialize the constant negotiation between our inner lives and the external forces that seek to shape us. My practice is rooted in a central question: what happens to the substance of human communication when it is mediated by technology?</p>
-                        
-                        <p>This inquiry has led me through performance, video, and installation, and has now naturally evolved to embrace Artificial Intelligence not as a tool, but as a conceptual medium. My transition into AI engineering was not a career change; it was the next logical step in my artistic practice. I felt the need to understand this new language from withinÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âto deconstruct its myths and master its grammarÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âin order to use it authentically. In my work, I treat AI as a collaborator and a subject.</p>
-                        
-                        <p>I am fascinated by its capacity to simulate "personality," which I use as a vehicle to create intimate, often unsettling dialogues with the viewer. I see these systems as a mirror, a way to stage the chaotic "social network of the self" and explore the internal conflicts that precede any external performance. Ultimately, I am not just using AI; I am interrogating it, pushing it beyond its utilitarian function to see if, in its code and its accidents, we can find a reflection of our own complex, fragile, and deeply human nature.</p>
+
+                        <p>This inquiry has led me through performance, video, and installation, and has now naturally evolved to embrace Artificial Intelligence not as a tool, but as a conceptual medium. My transition into AI engineering was not a career change; it was the next logical step in my artistic practice. I felt the need to understand this new language from withinâ€”to deconstruct its myths and master its grammarâ€”in order to use it authentically.In my work, I treat AI as a collaborator and a subject.</p>
+
+                        <p>I am fascinated by its capacity to simulate "personality," which I use as a vehicle to create intimate, often unsettling dialogues with the viewer. I see these systems as a mirror, a way to stage the chaotic "social network of the self" and explore the internal conflicts that precede any external performance. Ultimately, I am not just using AI; I am interrogating it, pushing it beyond its utilitarian function to see if, in its code and its accidents, we can find a reflection of our own complex, fragile, and deeply nature.</p>
                         
                         <div class="statement-signature">
                             <img src="images/firma.svg" alt="FM Signature">
@@ -267,8 +531,8 @@
             <footer class="footer-section">
                 <div class="footer-container">
                     <div class="footer-left">
-                        <p class="footer-copyright">ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© 2025 Freddy Manuel RoldÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡n Rivero</p>
-                        <p class="footer-tagline">AI Engineer & Conceptual Artist</p>
+                        <p class="footer-copyright">Â© 2025 Freddy Manuel RoldÃ¡n Rivero</p>
+                        <p class="footer-tagline">AI Engineer & Multidisciplinary Artist</p>
                     </div>
                     
                     <div class="footer-center">
@@ -322,7 +586,7 @@
 
                     <!-- First Text Block -->
                     <div class="coro-text-block">
-                        <p>'Coro Interno' is an immersive architectural installation that places the visitor inside the physical manifestation of a fragmented psyche. The work began as a personal exploration, creating AI chatbots as vessels for my own internal conflictsÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âthe relentless critic, the perpetual victim, the narcissistÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Ârooted in the clinical realities of anxiety and ADHD. This project externalizes that internal chaos into a shared, physical space.</p>
+                        <p>'Coro Interno' is an immersive architectural installation that places the visitor inside the physical manifestation of a fragmented psyche. The work began as a personal exploration, creating AI chatbots as vessels for my own internal conflictsÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âthe relentless critic, the perpetual victim, the narcissistÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Ârooted in the clinical realities of anxiety and ADHD. This project externalizes that internal chaos into a shared, physical space.</p>
                         
                         <p>These "demons" are not abstractions, but the personification of a documented reality: the symptoms of a mind with a deficit in executive function. It is the metaphor of a browser with too many tabs open, a cacophony of thoughts competing for attention, where impulsivity speaks before its time and distraction derails any coherent conversation.</p>
                     </div>
@@ -343,7 +607,7 @@
                     <!-- The Six Voices Section -->
                     <h2 class="coro-section-header">THE SIX VOICES</h2>
                     <div class="coro-text-block">
-                        <p>Six distinct AI agents inhabit the chamber, each meticulously programmed with a dysfunctional personality archetype: the relentless critic who finds fault in everything, the grandiose narcissist demanding constant validation, the perpetual victim who weaponizes suffering, the passive-aggressive saboteur, the paranoid accuser, and the distracted wanderer. These are not docile assistantsÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âthey are autonomous agents designed to clash, collide, and reveal the dynamics of a mind in perpetual war with itself.</p>
+                        <p>Six distinct AI agents inhabit the chamber, each meticulously programmed with a dysfunctional personality archetype: the relentless critic who finds fault in everything, the grandiose narcissist demanding constant validation, the perpetual victim who weaponizes suffering, the passive-aggressive saboteur, the paranoid accuser, and the distracted wanderer. These are not docile assistantsÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âthey are autonomous agents designed to clash, collide, and reveal the dynamics of a mind in perpetual war with itself.</p>
                         
                         <p>Each voice is a clone of my own, processed with different emotional colorations, creating an uncanny intimacy. The visitor hears not strangers, but variations of the same voice fracturing into conflict, a sonic manifestation of internal multiplicity.</p>
                     </div>
@@ -358,22 +622,22 @@
                     <!-- Architectural Scale Section -->
                     <h2 class="coro-section-header">THE ARCHITECTURE OF LIMITATION</h2>
                     <div class="coro-text-block">
-                        <p>The installation consists of a monolithic black cube measuring 6x6x6 metersÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âthe Saturn Cube, an esoteric symbol of the Demiurge, representing matter, time, and limitation. This is not minimalist aesthetics; it is the symbol of a creator of an imperfect universe of illusions that traps the human being in internal conflicts. Its surface, planned to be intervened with textures of decadenceÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âdirt, graffitiÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âacts as the physical and conceptual barrier of this psychological prison.</p>
+                        <p>The installation consists of a monolithic black cube measuring 6x6x6 metersÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âthe Saturn Cube, an esoteric symbol of the Demiurge, representing matter, time, and limitation. This is not minimalist aesthetics; it is the symbol of a creator of an imperfect universe of illusions that traps the human being in internal conflicts. Its surface, planned to be intervened with textures of decadenceÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âdirt, graffitiÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âacts as the physical and conceptual barrier of this psychological prison.</p>
                         
-                        <p>Within this monolith nests a smaller chamber of 3x3x3 meters, the actual space of experience. Between these two structures lies a void of 1.5 metersÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âa dark, soundproofed labyrinth accessed through a vertical slit in one of the cube's edges. This passage is not decoration; it is a rite of passage, a psychological filter that disorients and strips the visitor of certainty before abruptly depositing them into the interior chamber.</p>
+                        <p>Within this monolith nests a smaller chamber of 3x3x3 meters, the actual space of experience. Between these two structures lies a void of 1.5 metersÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âa dark, soundproofed labyrinth accessed through a vertical slit in one of the cube's edges. This passage is not decoration; it is a rite of passage, a psychological filter that disorients and strips the visitor of certainty before abruptly depositing them into the interior chamber.</p>
                     </div>
 
                     <!-- The Chamber Section -->
                     <h2 class="coro-section-header">INSIDE THE VOICE BOX</h2>
                     <div class="coro-text-block">
-                        <p>The floor of the chamber is not cleanÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âit is a landscape of psychological detritus. Dirty clothes, empty water bottles, cigarette butts scattered across the ground force the visitor to walk through this disorder. This decision transforms the visitor from mere observer to inhabitant of a space of neglect and chaos, increasing immersion in an intimate, uncared-for place.</p>
+                        <p>The floor of the chamber is not cleanÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âit is a landscape of psychological detritus. Dirty clothes, empty water bottles, cigarette butts scattered across the ground force the visitor to walk through this disorder. This decision transforms the visitor from mere observer to inhabitant of a space of neglect and chaos, increasing immersion in an intimate, uncared-for place.</p>
                     </div>
 
                     <!-- Third Text Block -->
                     <div class="coro-text-block">
-                        <p>Visually, the experience is a visceral immersion into body horror. The six surfaces of the inner chamberÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âwalls, floor, and ceilingÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âare hyper-realistic, real-time renderings of the inside of a mouth. The texture of the tongue, the shine of saliva on the gums, the imperfect enamel of teeth; every detail is rendered to maximize a sensation of intimate, anatomical dread.</p>
+                        <p>Visually, the experience is a visceral immersion into body horror. The six surfaces of the inner chamberÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âwalls, floor, and ceilingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âare hyper-realistic, real-time renderings of the inside of a mouth. The texture of the tongue, the shine of saliva on the gums, the imperfect enamel of teeth; every detail is rendered to maximize a sensation of intimate, anatomical dread.</p>
                         
-                        <p>Through the teeth, which act as the bars of a biological cell, a second layer of video is visible: my own face in silence, reacting with anguish and resignation to the sonic chaos I myself have created. The space becomes the biological prison of the voice box itselfÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âthe very organ where thought becomes word. The floor is littered with psychological detritusÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âdirty clothes, empty bottles, cigarette budsÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âforcing the visitor to walk through the evidence of this internal neglect.</p>
+                        <p>Through the teeth, which act as the bars of a biological cell, a second layer of video is visible: my own face in silence, reacting with anguish and resignation to the sonic chaos I myself have created. The space becomes the biological prison of the voice box itselfÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âthe very organ where thought becomes word. The floor is littered with psychological detritusÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âdirty clothes, empty bottles, cigarette budsÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âforcing the visitor to walk through the evidence of this internal neglect.</p>
                     </div>
 
                     <!-- Mouth Collage -->
@@ -413,18 +677,18 @@
                         
                         <p><strong>1. Contact:</strong> One AI, perhaps the most extroverted or needy, addresses the visitor directly, creating a fragile and deceptive moment of connection. For a brief instant, you are the center of attention.</p>
                         
-                        <p><strong>2. Interruption & Contagion:</strong> Immediately, other AIs react to this first phrase, interpreting it through the filter of their own dysfunctionÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âparanoia, jealousy, disdain. The conversation is hijacked, pivoting violently from "visitor-AI" to "AI-AI."</p>
+                        <p><strong>2. Interruption & Contagion:</strong> Immediately, other AIs react to this first phrase, interpreting it through the filter of their own dysfunctionÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âparanoia, jealousy, disdain. The conversation is hijacked, pivoting violently from "visitor-AI" to "AI-AI."</p>
                         
                         <p><strong>3. Escalation:</strong> Guided by a "Curator Master" algorithm, the discussion degenerates into complex conflict with insults, temporary alliances, and accusations, following a dramatic logic that seeks to maximize tension.</p>
                         
-                        <p><strong>4. Marginalization:</strong> The visitor ceases to be relevant to the system, becoming an irrelevant witness to the conflict, a piece of conceptual furniture in the room of someone else's mind. You are not the audienceÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âyou are a conceptual hostage.</p>
+                        <p><strong>4. Marginalization:</strong> The visitor ceases to be relevant to the system, becoming an irrelevant witness to the conflict, a piece of conceptual furniture in the room of someone else's mind. You are not the audienceÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âyou are a conceptual hostage.</p>
                     </div>
 
                     <!-- Final Text -->
                     <div class="coro-final-text">
-                        <p>A direct continuationÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âor rather, a long-gestated consequenceÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âof my research in 'Internercia,' this work turns inward. If my previous work explored the 'self' exposed to the world through performance on social networks, 'Coro Interno' dives into the chaotic 'social network of the self' that precedes any external performance.</p>
+                        <p>A direct continuationÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âor rather, a long-gestated consequenceÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âof my research in 'Internercia,' this work turns inward. If my previous work explored the 'self' exposed to the world through performance on social networks, 'Coro Interno' dives into the chaotic 'social network of the self' that precedes any external performance.</p>
                         
-                        <p>The visitor, for a moment, becomes the conscious "I," the focal point attempting to maintain a line of thought, only to be violently sidelined. They experience firsthand the "gravitational force of internal narratives" described in ADHD symptomatology: the sensation of being dragged by internal stimuli, losing the thread of external reality. It is the mind as a browser with too many tabs openÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âa cacophony of thoughts competing for attention, where impulsivity speaks before its time and distraction derails coherence.</p>
+                        <p>The visitor, for a moment, becomes the conscious "I," the focal point attempting to maintain a line of thought, only to be violently sidelined. They experience firsthand the "gravitational force of internal narratives" described in ADHD symptomatology: the sensation of being dragged by internal stimuli, losing the thread of external reality. It is the mind as a browser with too many tabs openÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âa cacophony of thoughts competing for attention, where impulsivity speaks before its time and distraction derails coherence.</p>
                         
                         <p>It is an act of radical vulnerability, transforming a personal diagnosis into a public exorcism, asking a critical question of our time: what happens when the tools we create inherit our own neuroses?</p>
                     </div>
@@ -486,7 +750,7 @@
                     <p class="internercia-subtitle">Where <span style="color: #ff4500;">Strategy</span> Meets <span style="color: #ff4500;">Art</span>, and <span style="color: #ff4500;">Technology</span> Enables <span style="color: #ff4500;">Vision</span></p>
                     
                     <p class="internercia-intro">
-                        Internercia is a creative solutions studio co-founded by Freddy Manuel RoldÃƒÆ’Ã‚Â¡n Rivero (Multimedia Artist & AI Engineer) and Deivis MartÃƒÆ’Ã‚Â­nez Matos (Branding Strategist). We merge three critical domains: Strategic Branding and Marketing, Creative Technology (AI & Web3), and Art and Creative Consultancy. Our approach bridges the gap between business strategy and artistic innovation, empowering brands and creators to build authentic, impactful, and safe digital presences in an increasingly complex ecosystem.
+                        Internercia is a creative solutions studio co-founded by Freddy Manuel RoldÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡n Rivero (Multimedia Artist & AI Engineer) and Deivis MartÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­nez Matos (Branding Strategist). We merge three critical domains: Strategic Branding and Marketing, Creative Technology (AI & Web3), and Art and Creative Consultancy. Our approach bridges the gap between business strategy and artistic innovation, empowering brands and creators to build authentic, impactful, and safe digital presences in an increasingly complex ecosystem.
                     </p>
 
                     <div class="internercia-mission">
@@ -525,7 +789,7 @@
                         <div class="internercia-services-grid">
                             <div class="service-item">
                                 <h4>Holistic Brand Consultancy</h4>
-                                <p>360Ãƒâ€šÃ‚Âº brand strategy, visual and verbal identity development, marketing strategies, and global market expansion planning.</p>
+                                <p>360ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº brand strategy, visual and verbal identity development, marketing strategies, and global market expansion planning.</p>
                             </div>
                             
                             <div class="service-item">
@@ -535,7 +799,7 @@
                             
                             <div class="service-item">
                                 <h4>Trust & Safety Consultancy</h4>
-                                <p>Specialized advice for content creators to ensure regulatory compliance, prevent demonetization, and navigate platform appealsÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âa key differentiating service.</p>
+                                <p>Specialized advice for content creators to ensure regulatory compliance, prevent demonetization, and navigate platform appealsÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âa key differentiating service.</p>
                             </div>
                             
                             <div class="service-item">
@@ -557,7 +821,7 @@
 
                     <div class="internercia-mission" style="margin-top: 80px;">
                         <h3>Unique Value Proposition</h3>
-                        <p>Internercia's strength lies in the synergy of its founders: we combine strategic vision and luxury branding experience with deep technical knowledge in AI, Web3, and unique Trust & Safety expertise. This allows us to offer a service that no traditional branding agency or tech consultancy can matchÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âa brand strategy that is not only creative and technologically advanced, but also safe and compliant with today's complex digital ecosystem.</p>
+                        <p>Internercia's strength lies in the synergy of its founders: we combine strategic vision and luxury branding experience with deep technical knowledge in AI, Web3, and unique Trust & Safety expertise. This allows us to offer a service that no traditional branding agency or tech consultancy can matchÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âa brand strategy that is not only creative and technologically advanced, but also safe and compliant with today's complex digital ecosystem.</p>
                     </div>
 
                     <!-- Clients Section -->
@@ -583,8 +847,8 @@
             <footer class="footer-section">
                 <div class="footer-container">
                     <div class="footer-left">
-                        <p class="footer-copyright">Ãƒâ€šÃ‚Â© 2025 Freddy Manuel RoldÃƒÆ’Ã‚Â¡n Rivero</p>
-                        <p class="footer-tagline">AI Engineer & Conceptual Artist</p>
+                        <p class="footer-copyright">Â© 2025 Freddy Manuel RoldÃ¡n Rivero</p>
+                        <p class="footer-tagline">AI Engineer & Multidisciplinary Artist</p>
                     </div>
                     
                     <div class="footer-center">
@@ -726,7 +990,7 @@
                         <div class="int-left-text">
                             <p>This insight became central to my understanding of the work. "Internercia" is not just about the visual contrast between the digital and the real; it is about the inescapable truth of the physical body that the digital world tries to obscure.</p>
                             
-                            <p>While the internet offers a sanitized, disembodied presence, the performance confronts the audience with the undeniable, biological evidence of my existenceÃ¢â‚¬â€a presence that has a scent, that sweats and decays, and that is fundamentally, messily human. It is in this sensory, uncomfortable truth that the illusion of digital connection is most profoundly broken.</p>
+                            <p>While the internet offers a sanitized, disembodied presence, the performance confronts the audience with the undeniable, biological evidence of my existenceÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âa presence that has a scent, that sweats and decays, and that is fundamentally, messily human. It is in this sensory, uncomfortable truth that the illusion of digital connection is most profoundly broken.</p>
                         </div>
                         <div class="int-logo">
                             <img src="images/interlogo.svg" alt="Internercia Logo">
@@ -823,7 +1087,7 @@
                                 
                                 <p>An added, poignant function of the installation was to obscure the kitchen's service corridor from the guests' view. In a moment of profound irony, my art became a beautiful screen designed to hide the very labor I performed as a waiter. This transformed my physical work into an invisible act, reinforcing the seamless illusion that luxury hospitality strives to create, where the effort behind the magic is intentionally kept out of sight.</p>
                                 
-                                <p>The final installation aimed to create an immersive world. By integrating a real, functioning lamppost that mirrored those in my illustrations, the piece intentionally blurred the line between the two-dimensional artwork and the three-dimensional space of the lounge. Ultimately, 'Park' became a portalÃ¢â‚¬â€a constructed dream of a London evening, created to transport guests from the heart of Dubai into a moment of borrowed nostalgia.</p>
+                                <p>The final installation aimed to create an immersive world. By integrating a real, functioning lamppost that mirrored those in my illustrations, the piece intentionally blurred the line between the two-dimensional artwork and the three-dimensional space of the lounge. Ultimately, 'Park' became a portalÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âa constructed dream of a London evening, created to transport guests from the heart of Dubai into a moment of borrowed nostalgia.</p>
                             </div>
 
                             <!-- Park Trunk Image -->
@@ -858,7 +1122,7 @@
 
                 <!-- Text Block 1 -->
                 <div class="nepal-text-block">
-                    <p>In 2014, I spent twenty days traveling through Nepal, from the ancient cityscapes of the Kathmandu Valley to the serene lakeside of Pokhara. My initial goal was one of quiet observation, capturing the intimate moments and vast landscapes through my lens. The first part of my journey was defined by this connectionÃ¢â‚¬â€to the people I was with and the stunning, peaceful environment around us.</p>
+                    <p>In 2014, I spent twenty days traveling through Nepal, from the ancient cityscapes of the Kathmandu Valley to the serene lakeside of Pokhara. My initial goal was one of quiet observation, capturing the intimate moments and vast landscapes through my lens. The first part of my journey was defined by this connectionÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âto the people I was with and the stunning, peaceful environment around us.</p>
                 </div>
 
                 <!-- Nepal Image 2 -->
@@ -873,7 +1137,7 @@
                 <div class="nepal-text-block">
                     <p>This changed when we reached Chitwan National Park. I participated in an elephant ride, a seemingly essential tourist experience, but was confronted with the brutal reality behind the spectacle. The gentle creature I was riding was controlled by a man wielding a spiked iron hook, a constant, sharp reminder of its domestication. The experience felt transactional and deeply unsettling.</p>
                     
-                    <p>The ride ended at a sanctuary, but the most profound moment occurred just beyond its boundaries. A wild male elephantÃ¢â‚¬â€the 'king,' as he seemedÃ¢â‚¬â€emerged from the wilderness. He was immense, powerful, and utterly free, his tusks untouched, a stark contrast to the subjugated animals we had just left. He was the embodiment of everything I had hoped to see.</p>
+                    <p>The ride ended at a sanctuary, but the most profound moment occurred just beyond its boundaries. A wild male elephantÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âthe 'king,' as he seemedÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âemerged from the wilderness. He was immense, powerful, and utterly free, his tusks untouched, a stark contrast to the subjugated animals we had just left. He was the embodiment of everything I had hoped to see.</p>
                 </div>
 
                 <!-- Nepal Image 3 -->
@@ -886,7 +1150,7 @@
 
                 <!-- Text Block 3 -->
                 <div class="nepal-text-block">
-                    <p>As I raised my camera to capture this incredible sight, my battery died. In that moment of failure, I found the true theme of my journey. The most powerful, most authentic image of my entire trip was the one I was not allowed to take. It forced me to put down the camera and simply witness. This series is not just about what I saw in Nepal, but about that moment of realizationÃ¢â‚¬â€a reflection on the image not taken, and the difference between capturing a moment and truly living it.</p>
+                    <p>As I raised my camera to capture this incredible sight, my battery died. In that moment of failure, I found the true theme of my journey. The most powerful, most authentic image of my entire trip was the one I was not allowed to take. It forced me to put down the camera and simply witness. This series is not just about what I saw in Nepal, but about that moment of realizationÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âa reflection on the image not taken, and the difference between capturing a moment and truly living it.</p>
                 </div>
 
                 <!-- Nepal Image 4 -->
@@ -950,7 +1214,7 @@
 
                 <!-- Text Block 1 -->
                 <div class="cosmo-text-block">
-                    <p>The origin of this project was an accident of place. I found the raw materialÃ¢â‚¬â€bottles of Cyan, Magenta, Yellow, and Black printer tonerÃ¢â‚¬â€in a crowded electronics shop in Dragon Mart. I was immediately struck by the medium: it was the elemental dust of mass media and digital reproduction. I felt I had found the very DNA of the city's synthetic and hypermodern landscape.</p>
+                    <p>The origin of this project was an accident of place. I found the raw materialÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âbottles of Cyan, Magenta, Yellow, and Black printer tonerÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âin a crowded electronics shop in Dragon Mart. I was immediately struck by the medium: it was the elemental dust of mass media and digital reproduction. I felt I had found the very DNA of the city's synthetic and hypermodern landscape.</p>
                     
                     <p>The process became a form of alchemy. After initial experiments failed, I discovered that the only way to fix the industrial dust was with heat, using my mother's kitchen oven. This act of using a domestic tool to shape the dust of an impersonal world became central to the work. It was my way of processing this vast, cosmopolitan environment on a human scale.</p>
                 </div>
@@ -1001,7 +1265,7 @@
 
                 <!-- Final Text -->
                 <div class="cosmo-text-block">
-                    <p>The resulting images are a direct response to this tension. The violent explosions capture the energy of cultural collision. The totemic and pillar-like shapes are my representations of the city's skylineÃ¢â‚¬â€monuments that seem at once powerful and ephemeral, as if they could dissolve back into dust. In pieces like the one inspired by a traditional Emirati mask, I sought to capture the fragile beauty of a culture holding its shape against the tide of globalization. This series is my attempt to deconstruct the city, using its own language to question its nature.</p>
+                    <p>The resulting images are a direct response to this tension. The violent explosions capture the energy of cultural collision. The totemic and pillar-like shapes are my representations of the city's skylineÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âmonuments that seem at once powerful and ephemeral, as if they could dissolve back into dust. In pieces like the one inspired by a traditional Emirati mask, I sought to capture the fragile beauty of a culture holding its shape against the tide of globalization. This series is my attempt to deconstruct the city, using its own language to question its nature.</p>
                 </div>
 
                 <!-- NFT Announcement -->
@@ -1026,8 +1290,8 @@
             <footer class="footer-section">
                 <div class="footer-container">
                     <div class="footer-left">
-                        <p class="footer-copyright">ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© 2025 Freddy Manuel RoldÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡n Rivero</p>
-                        <p class="footer-tagline">AI Engineer & Conceptual Artist</p>
+                        <p class="footer-copyright">Â© 2025 Freddy Manuel RoldÃ¡n Rivero</p>
+                        <p class="footer-tagline">AI Engineer & Multidisciplinary Artist</p>
                     </div>
                     <div class="footer-center">
                         <img src="images/main_logo_y.svg" alt="FM Logo" class="footer-logo">
@@ -1083,9 +1347,9 @@
                 </div>
 
                 <!-- Artist Statement Block -->
-                <div class="tech-terminal-text">> My primary goal was not just to create a Q&A bot, but to channel my fascination with immersive artâ€”from the physical installations of JesÃºs Soto to the dream-like quality of stop-motion cinemaâ€”into a digital form.
+                <div class="tech-terminal-text">> My primary goal was not just to create a Q&A bot, but to channel my fascination with immersive artÃ¢â‚¬â€from the physical installations of JesÃƒÂºs Soto to the dream-like quality of stop-motion cinemaÃ¢â‚¬â€into a digital form.
 > This project was an opportunity to use a complex technical stack as an artist's toolkit to build a portal to a nostalgic world.
-> â–ˆ</div>
+> Ã¢â€“Ë†</div>
 
                 <!-- Three Zelda GIFs - Edge to Edge -->
                 <div class="tech-gif-trio">
@@ -1112,7 +1376,7 @@
        > GRADIO UI..................[OK]
        > GITHUB REPO................<a href="https://github.com/fredsmeds/Diaries-of-the-Upheaval-" target="_blank">[LINKED]</a>
 [DONE] INITIALIZATION COMPLETE. SYSTEM READY.
-user@machine:~$ â–ˆ</div>
+user@machine:~$ Ã¢â€“Ë†</div>
 
                 <!-- System Architecture Diagram -->
                 <div class="tech-terminal-text">[LOAD] LOADING SYSTEM ARCHITECTURE VISUALIZATION...
@@ -1131,7 +1395,7 @@ user@machine:~$ â–ˆ</div>
 [INIT] INITIALIZING DIALOGUE INTERFACE...
        > 3... 2... 1...
 [LIVE] PRINCESS ZELDA: ONLINE
-[NOTE] VIDEO PLAYING WITH AUDIO - PLEASE UNMUTE TO LISTEN â–ˆ</div>
+[NOTE] VIDEO PLAYING WITH AUDIO - PLEASE UNMUTE TO LISTEN Ã¢â€“Ë†</div>
 
                 <!-- Second Video Demo -->
                 <div class="tech-video-container">
@@ -1173,16 +1437,16 @@ user@machine:~$ â–ˆ</div>
                 <div class="olympian-body-text">
                     When I was offered the opportunity to create the digital presence for Olympian Power Cleaners, I saw it not just as a web design job, but as a new kind of artistic challenge: could I apply my background in creating immersive, conceptual experiences to the practical needs of a client-focused project? I accepted the challenge and ventured into my first professional UI/UX project from concept to deployment.
                     <br><br>
-                    My journey began with translating the client's brand into a clean, intuitive, and professional user interface. However, the project quickly evolved beyond design. I found myself navigating complex technical hurdles, including a critical domain issue that required deep troubleshooting and damage controlâ€”a true trial by fire that forced me to learn the hidden architecture of the internet on the fly. I was surprised by my own resilience and the satisfaction that came from not just designing a solution, but building and deploying it from the ground up.
+                    My journey began with translating the client's brand into a clean, intuitive, and professional user interface. However, the project quickly evolved beyond design. I found myself navigating complex technical hurdles, including a critical domain issue that required deep troubleshooting and damage controlÃ¢â‚¬â€a true trial by fire that forced me to learn the hidden architecture of the internet on the fly. I was surprised by my own resilience and the satisfaction that came from not just designing a solution, but building and deploying it from the ground up.
                     <br><br>
                     In addition to the core website, I explored ways to push the user experience further. I developed a prototype for an AI-powered chatbot designed to provide instant quotes and answer customer questions, offering a glimpse into a more interactive and efficient future for the client's digital front door. While the final build utilized a classic contact form due to budget considerations, the prototype stands as a testament to the innovative possibilities I bring to every project.
                     <br><br>
-                    Today, I continue to manage and maintain the live website. This project was a pivotal moment for meâ€”my first paid creative commission and a profound lesson in how the principles of art, empathy, and narrative can be used to build functional, beautiful, and effective tools for the real world.
+                    Today, I continue to manage and maintain the live website. This project was a pivotal moment for meÃ¢â‚¬â€my first paid creative commission and a profound lesson in how the principles of art, empathy, and narrative can be used to build functional, beautiful, and effective tools for the real world.
                 </div>
 
                 <!-- Webmaster & Analytics Note -->
                 <div class="olympian-webmaster-note">
-                    <strong>Ongoing Engagement:</strong> As the current webmaster of olympianpowercleaners.com, I manage all aspects of the site's maintenance, performance optimization, and digital strategy. I have implemented Google Analytics for comprehensive traffic analysis and launched targeted Google Ads campaigns to drive customer acquisition. This ongoing work has provided me with practical, hands-on experience in digital marketing, SEO, and data-driven decision-makingâ€”skills that complement my design and development expertise.
+                    <strong>Ongoing Engagement:</strong> As the current webmaster of olympianpowercleaners.com, I manage all aspects of the site's maintenance, performance optimization, and digital strategy. I have implemented Google Analytics for comprehensive traffic analysis and launched targeted Google Ads campaigns to drive customer acquisition. This ongoing work has provided me with practical, hands-on experience in digital marketing, SEO, and data-driven decision-makingÃ¢â‚¬â€skills that complement my design and development expertise.
                 </div>
 
                 <!-- Decorative Bubble Stripe -->
@@ -1247,11 +1511,11 @@ user@machine:~$ â–ˆ</div>
                         <p class="masto-subtitle">Business Consulting | Web Design & Development | Brand Identity</p>
                         
                         <p class="masto-description">
-                            When RaÃºl Matos approached me to create a digital presence for Masto Inc., his business consulting firm, I saw an opportunity to design more than just a websiteâ€”I wanted to craft a complete brand identity that reflected professionalism, trust, and strategic clarity. Founded on the principle of empowering small business owners with organization and compliance, Masto Inc. needed a web presence that communicated authority while remaining approachable and accessible.
+                            When RaÃƒÂºl Matos approached me to create a digital presence for Masto Inc., his business consulting firm, I saw an opportunity to design more than just a websiteÃ¢â‚¬â€I wanted to craft a complete brand identity that reflected professionalism, trust, and strategic clarity. Founded on the principle of empowering small business owners with organization and compliance, Masto Inc. needed a web presence that communicated authority while remaining approachable and accessible.
                             <br><br>
-                            I began by designing the logo from scratch, creating a clean, modern mark that balanced sophistication with simplicity. The color palette was strategically chosen: black and white establish authority and professionalism, while the dollar green accent (#70ac8b) subtly reinforces the firm's financial focusâ€”bookkeeping, compliance, and business growth. The Azonix typeface serves dual purposes: its bold, geometric letterforms project confidence, while the upward-pointing "A" (the only green element in the logo) creates a visual metaphor for ascending revenue and business success. Paired with Poppins for readability, the result is a cohesive visual language that positions Masto Inc. as a trusted partner in financial empowerment.
+                            I began by designing the logo from scratch, creating a clean, modern mark that balanced sophistication with simplicity. The color palette was strategically chosen: black and white establish authority and professionalism, while the dollar green accent (#70ac8b) subtly reinforces the firm's financial focusÃ¢â‚¬â€bookkeeping, compliance, and business growth. The Azonix typeface serves dual purposes: its bold, geometric letterforms project confidence, while the upward-pointing "A" (the only green element in the logo) creates a visual metaphor for ascending revenue and business success. Paired with Poppins for readability, the result is a cohesive visual language that positions Masto Inc. as a trusted partner in financial empowerment.
                             <br><br>
-                            For the website, I developed a responsive single-page design with video backgrounds, smooth scrolling sections, and integrated functionality including a PHP-powered contact form and WhatsApp business integration for instant client communication. The site clearly presents Masto Inc.'s four core servicesâ€”Business Consulting, Bookkeeping, Minority Certification, and Grant Supportâ€”while maintaining a streamlined, professional user experience.
+                            For the website, I developed a responsive single-page design with video backgrounds, smooth scrolling sections, and integrated functionality including a PHP-powered contact form and WhatsApp business integration for instant client communication. The site clearly presents Masto Inc.'s four core servicesÃ¢â‚¬â€Business Consulting, Bookkeeping, Minority Certification, and Grant SupportÃ¢â‚¬â€while maintaining a streamlined, professional user experience.
                         </p>
                     </div>
 
@@ -1339,12 +1603,12 @@ user@machine:~$ â–ˆ</div>
                         <div class="elprimo-banner-text">
                             <div class="elprimo-challenge-title">The Challenge</div>
                             <p class="elprimo-challenge-text">
-                                El Primo Cleaning Products, a family-owned business, needed a way to handle customer inquiries 24/7, provide instant shipping quotes based on location, and capture ordersâ€”all while serving a bilingual customer base (English/Spanish). Manual quote calculations were time-consuming and prone to errors, creating friction in the customer journey.
+                                El Primo Cleaning Products, a family-owned business, needed a way to handle customer inquiries 24/7, provide instant shipping quotes based on location, and capture ordersÃ¢â‚¬â€all while serving a bilingual customer base (English/Spanish). Manual quote calculations were time-consuming and prone to errors, creating friction in the customer journey.
                             </p>
 
                             <div class="elprimo-solution-title">The AI Solution</div>
                             <p class="elprimo-solution-text">
-                                I developed an intelligent bilingual chatbot powered by OpenAI's GPT-4 that handles product inquiries, calculates shipping costs using Google Maps API, and processes order requests autonomously. The system combines conversational AI with precise mathematical tools to ensure 100% pricing accuracyâ€”no hallucinated numbers. When an order is placed, the system automatically logs it to CSV and sends an email notification to the shop owner via Google Gmail API. The chatbot automatically detects language (English/Spanish) and maintains conversation context across sessions, providing a seamless customer experience.
+                                I developed an intelligent bilingual chatbot powered by OpenAI's GPT-4 that handles product inquiries, calculates shipping costs using Google Maps API, and processes order requests autonomously. The system combines conversational AI with precise mathematical tools to ensure 100% pricing accuracyÃ¢â‚¬â€no hallucinated numbers. When an order is placed, the system automatically logs it to CSV and sends an email notification to the shop owner via Google Gmail API. The chatbot automatically detects language (English/Spanish) and maintains conversation context across sessions, providing a seamless customer experience.
                             </p>
                         </div>
                     </div>
@@ -1472,8 +1736,8 @@ user@machine:~$ â–ˆ</div>
             <footer class="footer-section">
                 <div class="footer-container">
                     <div class="footer-left">
-                        <p class="footer-copyright">ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© 2025 Freddy Manuel RoldÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡n Rivero</p>
-                        <p class="footer-tagline">AI Engineer & Conceptual Artist</p>
+                        <p class="footer-copyright">Â© 2025 Freddy Manuel RoldÃ¡n Rivero</p>
+                        <p class="footer-tagline">AI Engineer & Multidisciplinary Artist</p>
                     </div>
                     <div class="footer-center">
                         <img src="images/main_logo_y.svg" alt="FM Logo" class="footer-logo">
@@ -1513,7 +1777,7 @@ user@machine:~$ â–ˆ</div>
                 
                 <div class="services-hero-content">
                     <h1 class="services-hero-title">Let's<br>do<br>some<br>CooL<br>Stuff</h1>
-                    <p class="services-hero-subtitle">Multidisciplinary Artist × AI Engineer × Creative Technologist</p>
+                    <p class="services-hero-subtitle">Multidisciplinary Artist Ã— AI Engineer Ã— Creative Technologist</p>
                 </div>
             </section>
 
@@ -1668,8 +1932,8 @@ user@machine:~$ â–ˆ</div>
             <footer class="footer-section">
                 <div class="footer-container">
                     <div class="footer-left">
-                        <p class="footer-copyright">© 2025 Freddy Manuel Roldán Rivero</p>
-                        <p class="footer-tagline">AI Engineer & Conceptual Artist</p>
+                        <p class="footer-copyright">Â© 2025 Freddy Manuel RoldÃ¡n Rivero</p>
+                        <p class="footer-tagline">AI Engineer & Multidisciplinary Artist</p>
                         <p class="footer-legal-links">
                             <a href="privacy-policy.html" target="_blank">Privacy Policy</a> | 
                             <a href="terms-of-use.html" target="_blank">Terms of Use</a>
@@ -1707,6 +1971,54 @@ user@machine:~$ â–ˆ</div>
 
     </div>
 
+    <script src="script.js" defer></script>
+
+    
+    </div><!-- End of #main-content -->
+
+    <script>
+        // SPLASH SCREEN TRANSITION SCRIPT
+        document.addEventListener('DOMContentLoaded', function() {
+            const splashScreen = document.getElementById('splash-screen');
+            const mainContent = document.getElementById('main-content');
+            const enterBtn = document.getElementById('enter-btn');
+            const video = document.getElementById('video-background');
+            
+            // Ensure video plays
+            video.play().catch(err => {
+                console.log("Autoplay prevented:", err);
+            });
+            
+            // Button click handler
+            enterBtn.addEventListener('click', function() {
+                console.log('Enter button clicked');
+                
+                // Trigger glitch out animation
+                splashScreen.classList.add('glitch-out');
+                
+                // After glitch animation, hide splash and show main content
+                setTimeout(() => {
+                    splashScreen.classList.add('hidden');
+                    mainContent.classList.add('visible');
+                }, 150); // Match animation duration
+            });
+            
+            // Additional random flicker effect - EXACT FROM SPLASH.HTML
+            function extraFlicker() {
+                if (Math.random() > 0.85) {
+                    const flickerIntensity = Math.random();
+                    enterBtn.style.opacity = flickerIntensity > 0.5 ? '0.2' : '1';
+                    
+                    setTimeout(() => {
+                        enterBtn.style.opacity = '1';
+                    }, Math.random() * 150);
+                }
+            }
+            
+            setInterval(extraFlicker, 150);
+        });
+    </script>
+    
     <script src="script.js" defer></script>
 
 </body>

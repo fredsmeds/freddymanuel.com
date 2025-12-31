@@ -4295,6 +4295,23 @@
     padding-right: 40px;
 }
 
+/* Style for dropdown options */
+.form-group select option {
+    background-color: #000;
+    color: #fff;
+    padding: 10px;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 16px;
+}
+
+.form-group select option:hover,
+.form-group select option:checked,
+.form-group select option:focus {
+    background-color: #F9FF25;
+    background: #F9FF25;
+    color: #000;
+}
+
 .form-checkbox {
     display: flex;
     align-items: flex-start;

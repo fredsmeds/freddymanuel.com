@@ -1,8 +1,12 @@
-        // SMART VIDEO LOADING - Only load videos when navigating to a page
+// SMART VIDEO LOADING - Only load videos when navigating to a page
         const loadedPages = new Set();
         
         function loadVideosForPage(pageName) {
-            if (loadedPages.has(pageName)) return;
+            if (loadedPages.has(pageName)) {
+                // If page already loaded, just play the videos
+                playVideosForPage(pageName);
+                return;
+            }
             
             const pageElement = document.getElementById('page-' + pageName);
             if (!pageElement) return;
@@ -22,6 +26,32 @@
                 }
             });
             loadedPages.add(pageName);
+        }
+
+        // Pause all videos on a specific page
+        function pauseVideosForPage(pageName) {
+            const pageElement = document.getElementById('page-' + pageName);
+            if (!pageElement) return;
+            
+            const videos = pageElement.querySelectorAll('video');
+            videos.forEach(video => {
+                if (!video.paused) {
+                    video.pause();
+                }
+            });
+        }
+
+        // Play all videos on a specific page
+        function playVideosForPage(pageName) {
+            const pageElement = document.getElementById('page-' + pageName);
+            if (!pageElement) return;
+            
+            const videos = pageElement.querySelectorAll('video');
+            videos.forEach(video => {
+                if (video.hasAttribute('autoplay')) {
+                    video.play().catch(err => console.log("Autoplay prevented:", err));
+                }
+            });
         }
 
         // Image/Video protection
@@ -47,13 +77,15 @@ document.addEventListener('DOMContentLoaded', function() {
             let currentPage = 'about';
             let currentScrollPosition = 0;
 
-            // Play all videos
-            document.querySelectorAll('video').forEach(video => {
-                video.play().catch(err => console.log("Autoplay prevented:", err));
-            });
 
             // PAGE NAVIGATION FUNCTION
             function navigateToPage(pageName) {
+                // Pause videos from the current page before navigating
+                const previousPage = currentPage;
+                if (previousPage && previousPage !== pageName) {
+                    pauseVideosForPage(previousPage);
+                }
+                
                 currentPage = pageName;
                 carousel.setAttribute('data-page', pageName);
                 loadVideosForPage(pageName);
@@ -471,70 +503,62 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Load about page videos immediately
             loadVideosForPage('about');
-        });// CONTACT FORM HANDLING
-// Add this to the existing script.js file
 
-document.addEventListener('DOMContentLoaded', function() {
-    const contactForm = document.getElementById('contact-form');
-    const formStatus = document.getElementById('form-status');
-    
-    if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Disable submit button
-            const submitButton = contactForm.querySelector('.form-submit');
-            const originalButtonText = submitButton.textContent;
-            submitButton.disabled = true;
-            submitButton.textContent = 'SENDING...';
-            
-            // Clear previous status
-            formStatus.style.display = 'none';
-            formStatus.className = 'form-status';
-            
-            // Get form data
-            const formData = new FormData(contactForm);
-            
-            // Send via fetch API
-            fetch('send-contact.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Re-enable button
-                submitButton.disabled = false;
-                submitButton.textContent = originalButtonText;
-                
-                // Show status message
-                if (data.success) {
-                    formStatus.textContent = data.message;
-                    formStatus.className = 'form-status success';
-                    formStatus.style.display = 'block';
+            // CONTACT FORM SUBMISSION
+            const contactForm = document.getElementById('contact-form');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
                     
-                    // Reset form
-                    contactForm.reset();
+                    const submitBtn = contactForm.querySelector('.form-submit');
+                    const statusDiv = document.getElementById('form-status');
+                    const originalBtnText = submitBtn.textContent;
                     
-                    // Scroll to status message
-                    formStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                } else {
-                    formStatus.textContent = data.message;
-                    formStatus.className = 'form-status error';
-                    formStatus.style.display = 'block';
-                }
-            })
-            .catch(error => {
-                // Re-enable button
-                submitButton.disabled = false;
-                submitButton.textContent = originalButtonText;
-                
-                // Show error
-                formStatus.textContent = 'Sorry, there was an error sending your message. Please try again or email directly: fmroldanrivero@gmail.com';
-                formStatus.className = 'form-status error';
-                formStatus.style.display = 'block';
-                
-                console.error('Form submission error:', error);
-            });
+                    // Disable button and show loading state
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'SENDING...';
+                    submitBtn.style.opacity = '0.6';
+                    
+                    // Get form data
+                    const formData = new FormData(contactForm);
+                    
+                    // Send via fetch
+                    fetch('send-contact.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Success
+                            statusDiv.textContent = data.message;
+                            statusDiv.style.color = '#F9FF25';
+                            statusDiv.style.display = 'block';
+                            contactForm.reset();
+                        } else {
+                            // Error
+                            statusDiv.textContent = data.message;
+                            statusDiv.style.color = '#ff4444';
+                            statusDiv.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        statusDiv.textContent = 'An error occurred. Please try again or email directly: fmroldanrivero@gmail.com';
+                        statusDiv.style.color = '#ff4444';
+                        statusDiv.style.display = 'block';
+                    })
+                    .finally(() => {
+                        // Re-enable button
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalBtnText;
+                        submitBtn.style.opacity = '1';
+                        
+                        // Hide status message after 8 seconds
+                        setTimeout(() => {
+                            statusDiv.style.display = 'none';
+                        }, 8000);
+                    });
+                });
+            }
         });
-    }
-});
