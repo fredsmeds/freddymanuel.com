@@ -13,6 +13,8 @@ PHPMailer/
 *.webm
 *.zip
 *.rar
+*.log
+*send-contact.php
 
 # Sistema
 .DS_Store
