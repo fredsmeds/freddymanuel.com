@@ -29,20 +29,9 @@ wheels/
 .installed.cfg
 *.egg
 
-# Backend database
-database/
 
 # Heavy media files
-videos/
-images/
-MATERIAL/
-fonts/
-assets/videos/
-assets/images/
-assets/fonts/
-*.mp4
 *.mov
-*.webm
 *.zip
 *.rar
 

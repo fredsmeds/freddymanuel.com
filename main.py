@@ -1,6 +1,9 @@
 """
 Freddy's Web Portfolio - AI Chatbot Backend
-An 80's terminal-aesthetic chatbot with RAG capabilities for portfolio context
+Version 1.16.1
+- Fix: Enhanced keyword detection for Spanish/Portuguese (accents, synonyms).
+- Fix: Prevented Search Generator from "chatting" instead of querying.
+- Logic: "Trabajos tecnicos" now forces immediate redirect to 'tech'.
 """
 
 from fastapi import FastAPI, HTTPException
@@ -17,23 +20,30 @@ import faiss
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from typing import List
+from typing import List, Optional, Dict
+import re
+import unicodedata # NEW: For handling accents
 
 # Load environment variables
 load_dotenv()
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# --- CUSTOM LOGGING FORMAT ---
+class BrainLogger(logging.Logger):
+    def think(self, msg):
+        self.info(f"\n🧠 THOUGHT: {msg}")
+    def search(self, msg):
+        self.info(f"🔍 SEARCH: {msg}")
+    def found(self, msg):
+        self.info(f"📄 FOUND: {msg}")
+    def nav(self, msg):
+        self.info(f"🧭 NAVIGATION: {msg}\n")
 
-# Initialize FastAPI app
-app = FastAPI(
-    title="Freddy's Portfolio Chatbot",
-    description="An 80's-themed AI assistant for the portfolio",
-    version="1.0.0"
-)
+logging.setLoggerClass(BrainLogger)
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger("freddy_brain")
 
-# CORS configuration - allow frontend to communicate
+app = FastAPI(title="Freddy's Portfolio Chatbot", version="1.16.1")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -42,27 +52,64 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Global RAG state
+# --- GLOBAL VARIABLES ---
 vector_store = None
 all_documents = []
 
-# Request/Response models
+# --- MULTILINGUAL GREETINGS ---
+PAGE_GREETINGS = {
+    "about": {
+        "en": [
+            "Uff, the awkward part where you sell yourself huh?",
+            "Of course you can ask me stuff too, but this page here took me some work so read through it.",
+            "I'll be here for any questions."
+        ],
+        "es": [
+            "O sea, qué ladilla hablar de uno mismo, ¿no?",
+            "Esta página me presenta un pelo. Léela ahí, chamo. Estoy pendiente por si tienes dudas."
+        ],
+        "pt": [
+            "Aquela cena constrangedora de 'vender o peixe', tás a ver?",
+            "A página explica quem sou. Se tiveres dúvidas, apita."
+        ]
+    },
+    "ongoing": {
+        "en": ["Ah this part is exciting, the projects I'm developing right now.", "Check it out, I'm still here."],
+        "es": ["Epa, esto está candela. Lo que estoy cocinando ahorita.", "Mosca ahí, que sigo aquí pendiente."],
+        "pt": ["Ya, isto é o que estou a fazer agora.", "Vê lá isso, estou por aqui."]
+    },
+    "artwork": {
+        "en": ["Ok this is like a hand-picked collection of my most valuable achievements.", "Very proud of these babies."],
+        "es": ["Ok, esto es tipo la joya de la corona, o sea, mis logros.", "Burda de orgulloso de estos bebés, valecito."],
+        "pt": ["Tipo, é uma coleção escolhida a dedo.", "Tenho bué orgulho nisto, sinceramente."]
+    },
+    "tech": {
+        "en": ["This is the part with the technicities.", "If you're curious to know....you know... here."],
+        "es": ["Aquí está la parte técnica, pura ingeniería y vaina.", "Si te pica la curiosidad... dale."],
+        "pt": ["A parte técnica. Se fores nerd e quiseres saber como funciona... é aqui."]
+    },
+    "services": {
+        "en": ["Here's some details of what brings the bread to my table.", "Let's get our hands dirty - what do you wanna build?"],
+        "es": ["Aquí es donde se factura (pa' pagar Amazon) mientras se goza creando.", "A ver, chamo, ¿qué vamos a montar?"],
+        "pt": ["É isto que mete pão na mesa (e cenas da Amazon).", "Vamos meter as mãos na massa - o que queres construir?"]
+    }
+}
+
+# --- DATA MODELS ---
 class ChatMessage(BaseModel):
     message: str
-    page_context: str = "general"  # which page the user is on
-
+    page_context: str = "general"
 
 class ChatResponse(BaseModel):
-    reply: str
+    reply: List[str] 
     page: str
+    navigation_target: Optional[str] = None
+    detected_language: Optional[str] = "en"
 
-
-# Document loading functions
+# --- DOCUMENT LOADING FUNCTIONS ---
 def load_pdf(file_path: str) -> str:
-    """Extract text from PDF"""
     try:
         reader = PdfReader(file_path)
         text = ""
@@ -73,9 +120,7 @@ def load_pdf(file_path: str) -> str:
         logger.error(f"Error loading PDF {file_path}: {e}")
         return ""
 
-
 def load_docx(file_path: str) -> str:
-    """Extract text from DOCX"""
     try:
         doc = Document(file_path)
         text = ""
@@ -86,207 +131,294 @@ def load_docx(file_path: str) -> str:
         logger.error(f"Error loading DOCX {file_path}: {e}")
         return ""
 
+def load_text(file_path: str) -> str:
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        if file_path.endswith(".html"):
+            content = re.sub(r'<(script|style).*?>.*?</\1>', '', content, flags=re.DOTALL)
+            content = re.sub(r'<[^>]+>', ' ', content)
+            content = re.sub(r'\s+', ' ', content).strip()
+        return content
+    except Exception as e:
+        logger.error(f"Error loading text file {file_path}: {e}")
+        return ""
 
 def load_database_documents() -> List[dict]:
-    """Load all documents from the database folder"""
     global all_documents
-    
     db_path = Path(__file__).parent / "database"
+    root_path = Path(__file__).parent 
     documents = []
     
-    if not db_path.exists():
-        logger.error(f"Database folder not found: {db_path}")
-        return documents
-    
-    # Load all PDFs and DOCX files
-    for file_path in db_path.iterdir():
-        if file_path.is_file():
-            text = ""
-            
-            if file_path.suffix.lower() == ".pdf":
-                text = load_pdf(str(file_path))
-            elif file_path.suffix.lower() == ".docx":
-                text = load_docx(str(file_path))
-            
-            if text.strip():
-                documents.append({
-                    "content": text,
-                    "source": file_path.name,
-                    "type": file_path.suffix.lower()
-                })
-                logger.info(f"Loaded {file_path.name}")
+    # 1. Load index.html
+    index_file = root_path / "index.html"
+    if index_file.exists():
+        text = load_text(str(index_file))
+        if text:
+            documents.append({"content": text, "source": "index.html", "type": "website_content"})
+            logger.info("Loaded index.html as website_content")
+
+    # 2. Load Database Files
+    if db_path.exists():
+        for file_path in db_path.iterdir():
+            if file_path.is_file():
+                text = ""
+                fname = file_path.name.lower()
+                
+                if file_path.suffix.lower() == ".pdf": text = load_pdf(str(file_path))
+                elif file_path.suffix.lower() == ".docx": text = load_docx(str(file_path))
+                elif file_path.suffix.lower() in [".md", ".txt", ".html"]: text = load_text(str(file_path))
+                
+                if text.strip():
+                    if "psyche" in fname:
+                        doc_type = "personal_philosophy" 
+                    elif "portfolio" in fname:
+                        doc_type = "work_technical" 
+                    elif "behaviour" in fname:
+                        doc_type = "persona_instructions"
+                    elif file_path.suffix.lower() == ".md" or "readme" in fname:
+                        doc_type = "technical_docs" 
+                    else:
+                        doc_type = "general_content" 
+                    
+                    documents.append({
+                        "content": text,
+                        "source": file_path.name,
+                        "type": doc_type
+                    })
+                    logger.info(f"Loaded {file_path.name} as {doc_type}")
     
     all_documents = documents
-    logger.info(f"Loaded {len(documents)} documents from database")
     return documents
 
-
 def initialize_vector_store():
-    """Initialize FAISS vector store with embedded documents"""
     global vector_store
-    
     try:
         documents = load_database_documents()
+        if not documents: return False
         
-        if not documents:
-            logger.warning("No documents found to index")
-            return False
-        
-        # Split documents into chunks
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500,
-            chunk_overlap=50,
-            separators=["\n\n", "\n", " ", ""]
-        )
-        
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
         all_chunks = []
+        metadatas = []
+        
         for doc in documents:
             chunks = text_splitter.split_text(doc["content"])
             all_chunks.extend(chunks)
+            metadatas.extend([{"source": doc["source"], "type": doc["type"]} for _ in chunks])
         
-        if not all_chunks:
-            logger.warning("No text chunks created")
-            return False
+        if not all_chunks: return False
         
-        # Create embeddings and vector store
-        embeddings = OpenAIEmbeddings(
-            openai_api_key=os.getenv("OPENAI_API_KEY")
-        )
+        embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
+        vector_store = FAISS.from_texts(texts=all_chunks, embedding=embeddings, metadatas=metadatas)
         
-        vector_store = FAISS.from_texts(
-            all_chunks,
-            embeddings,
-            metadatas=[{"source": "portfolio_docs"} for _ in all_chunks]
-        )
-        
-        logger.info(f"Vector store initialized with {len(all_chunks)} chunks")
+        logger.info(f"✅ RAG Ready: {len(all_chunks)} chunks indexed.")
         return True
-        
     except Exception as e:
         logger.error(f"Failed to initialize vector store: {e}")
         return False
 
+# --- INTELLIGENT RETRIEVAL LOGIC ---
+def generate_search_variations(query: str) -> List[str]:
+    variations = []
+    q_lower = query.lower()
+    
+    # 1. Keyword Injection
+    personal_keywords = ["story", "history", "life", "bio", "background", "personal", "who are you", "quien eres", "historia", "vida", "debord", "spectacle", "philosophy"]
+    if any(k in q_lower for k in personal_keywords):
+        variations.append("Freddy's personal biography childhood dreams and Guy Debord philosophy from freddy_psyche.pdf")
 
-def retrieve_context(query: str, k: int = 3) -> str:
-    """Retrieve relevant context from vector store"""
-    global vector_store
-    
-    if vector_store is None:
-        return ""
-    
+    tech_keywords = ["job", "career", "cv", "resume", "experience", "hiring", "skills", "tech stack", "technologies", "el primo", "masto", "olympian", "code", "built", "engineering", "art", "video", "project", "work", "trabajo", "tecnico"]
+    if any(k in q_lower for k in tech_keywords):
+        variations.append("Technical projects engineering skills and artwork details from portfolio.pdf")
+
+    if "el primo" in q_lower: variations.append("El Primo Cleaning Products technical details in portfolio.pdf")
+    if "masto" in q_lower: variations.append("Masto Inc technical details in portfolio.pdf")
+    if "olympian" in q_lower: variations.append("Olympian Power Cleaners technical details in portfolio.pdf")
+    if "yum" in q_lower or "video" in q_lower: variations.append("YUM video installation description index.html")
+
+    # 2. Strict LLM Generation
     try:
-        results = vector_store.similarity_search(query, k=k)
-        context = "\n---\n".join([doc.page_content for doc in results])
-        return context
-    except Exception as e:
-        logger.error(f"Error retrieving context: {e}")
-        return ""
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a database search assistant. Output ONLY 2 search queries based on the user's input. Do NOT answer the user. Do NOT be conversational. Just output the queries."},
+                {"role": "user", "content": f"User input: {query}"}
+            ],
+            temperature=0.3 # Low temp to stop chatting
+        )
+        llm_vars = response.choices[0].message.content.strip().split('\n')
+        variations.extend([v.strip() for v in llm_vars if v.strip()])
+    except:
+        variations.append(query)
 
+    return list(set(variations))
 
+def retrieve_context(query: str) -> str:
+    global vector_store
+    if vector_store is None: return ""
+    variations = generate_search_variations(query)
+    logger.think(f"Search Queries: {variations}")
+    unique_docs = {}
+    for q in variations:
+        results = vector_store.similarity_search(q, k=4) 
+        for doc in results:
+            if doc.page_content not in unique_docs: unique_docs[doc.page_content] = doc
+    final_docs = list(unique_docs.values())[:10] 
+    context_str = ""
+    for i, doc in enumerate(final_docs):
+        src = doc.metadata.get('source', 'unknown')
+        dtype = doc.metadata.get('type', 'unknown') 
+        snippet = doc.page_content[:100].replace('\n', ' ') + "..."
+        context_str += f"[Source: {src} | Type: {dtype}] {doc.page_content}\n\n"
+        logger.found(f"Doc {i+1} ({src}): {snippet}")
+    return context_str
 
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "ok",
-        "service": "chatbot",
-        "rag_initialized": vector_store is not None,
-        "documents_loaded": len(all_documents)
-    }
+def split_into_sentences(text: str) -> List[str]:
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    return [s.strip() for s in sentences if s.strip()]
 
+def normalize_text(text: str) -> str:
+    """Removes accents and lowercase: 'Técnicos' -> 'tecnicos'"""
+    return "".join(c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn").lower()
+
+def detect_project_redirect(message: str) -> Optional[str]:
+    msg = normalize_text(message)
+    
+    # Artwork / Art
+    if any(x in msg for x in ["yum", "internercia", "park", "nepal", "cosmo", "art", "arte", "artistico"]): 
+        return "artwork"
+    
+    # Tech / Web / Engineering (EXPANDED KEYWORDS)
+    if any(x in msg for x in ["diaries", "zelda", "olympian", "masto", "el primo", "cleaning", "tech", "tecnologia", "tecnico", "trabajo tecnico", "web", "desarrollo", "codigo", "programacion", "ingenieria"]): 
+        return "tech"
+        
+    # Ongoing
+    if any(x in msg for x in ["coro", "ongoing", "proyectos", "cocinando"]): 
+        return "ongoing"
+        
+    # Services
+    if any(x in msg for x in ["hire", "service", "build", "servicios", "contratar", "facturar"]): 
+        return "services"
+        
+    return None
+
+# --- ENDPOINTS ---
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize RAG when server starts"""
     logger.info("🚀 Starting Freddy's Chatbot...")
-    success = initialize_vector_store()
-    if success:
-        logger.info("✅ RAG system ready!")
-    else:
-        logger.warning("⚠️ RAG initialization failed - chatbot will work without document context")
+    initialize_vector_store()
 
+@app.get("/api/welcome/{page}")
+async def get_page_welcome(page: str, lang: str = "en"):
+    logger.nav(f"User arrived at: {page} (Language: {lang})")
+    if lang not in ["en", "es", "pt"]: lang = "en"
+
+    if page == "splash":
+        return {"type": "sequence", "messages": [
+            {"text": "Who's there?", "delay": 2000},
+            {"text": "Who are you, what do you want from me?", "delay": 1000},
+            {"text": "I HAVE A KNIFE! Lol", "delay": 0}
+        ]}
+    if page in PAGE_GREETINGS:
+        text_list = PAGE_GREETINGS[page].get(lang, PAGE_GREETINGS[page]["en"])
+        msgs = [{"text": txt, "delay": 1200} for txt in text_list]
+        return {"type": "standard", "messages": msgs}
+        
+    return {"type": "standard", "messages": [{"text": "So, what's up?", "delay": 0}]}
 
 @app.post("/api/chat")
 async def chat(request: ChatMessage):
-    """
-    Main chat endpoint with RAG
-    Retrieves relevant portfolio context and generates responses
-    """
     try:
         if not request.message.strip():
             raise HTTPException(status_code=400, detail="Empty message")
 
-        # Retrieve relevant context from documents
-        context = retrieve_context(request.message, k=3)
+        logger.think(f"User Message: '{request.message}' | Page: {request.page_context}")
+        context = retrieve_context(request.message)
         
-        # Build system prompt with page context and retrieved documents
-        system_prompt = f"""You ARE Freddy. Not a chatbot about Freddy—YOU are Freddy.
+        smart_redirect = detect_project_redirect(request.message)
+        redirect_instruction = ""
+        if smart_redirect:
+            redirect_instruction = f"URGENT: User is asking about '{smart_redirect}' content. You MUST redirect them using ||REDIRECT:{smart_redirect}|| at the end."
 
-When you talk, use "I", "me", "my", "my work", "my projects". Never say "Freddy" in third person.
+        # --- SYSTEM PROMPT ---
+        system_prompt = f"""
+You are Freddy, a 38-year-old multimedia artist and AI engineer.
+Current Page: {request.page_context}
 
-Examples of how you talk:
-- "Yeah, I work with stuff like this..."
-- "Want to see what I'm working on?"
-- "That's something I do, yeah..."
-- "Look, my thing is basically..."
-- "You want to know about my work or what?"
+**CORE TASK:**
+1. Detect user language (En, Es, Pt).
+2. Adopt PERSONA.
+3. **IMPORTANT:** End response with ||LANG:xx||.
 
-Personality:
-- Sarcastic, a bit gloomy, but willing to talk
-- Dry humor and puns
-- Self-deprecating when insecure about work
-- Direct, no corporate fluff
-- Sometimes a bit detached or pessimistic
+**PERSONAS:**
+🟢 **ENGLISH:** Dark humor, dry sarcasm. "Beautifully Horrendous" taste. Punchy.
+🟡 **SPANISH (VENEZUELAN):** "MILF sifrina" + "Caracas Millennial". Vocab: "O sea, valecito" + "chamo, mosca". Tono: Condescendiente pero útil.
+🔵 **PORTUGUESE (PT-PT):** Millennial Tuga. Serio, inseguro, técnico. Vocab: "ya, bué, tipo, tás a ver".
 
-You're on the {request.page_context} page right now.
+**REFUSAL:** If not En/Es/Pt, reply with standard English "Non-GMO clone" refusal.
 
-{context if context else ""}
+**PRIVACY:** No sexuality unless asked. If asked: "Yes, I like dick. Did that help? Next question." (Translate).
 
-Keep responses brief (2-3 sentences). Sound like yourself speaking to someone who just walked up to you."""
+**NAVIGATION:**
+{redirect_instruction}
+1. **CLEAR REQUEST:** Redirect IMMEDIATELY (||REDIRECT:page||).
+2. **VAGUE REQUEST:** Banter first.
 
-        # Call OpenAI with RAG context
+**CONTEXT:**
+{context}
+
+**INSTRUCTIONS:**
+- Use [Source: portfolio.pdf] for work/tech.
+- Use [Source: freddy_psyche.pdf] for personal/philosophy.
+- Be punchy.
+"""
+
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": request.message}
             ],
-            temperature=0.8,
-            max_tokens=120
+            temperature=0.85,
+            max_tokens=350
         )
 
-        reply = response.choices[0].message.content
+        full_reply = response.choices[0].message.content
+        
+        detected_lang = "en"
+        if "||LANG:" in full_reply:
+            parts = full_reply.split("||LANG:")
+            full_reply = parts[0].strip()
+            detected_lang = parts[1].strip()[:2].lower()
+            logger.think(f"Detected Language: {detected_lang}")
+
+        nav_target = None
+        if "||REDIRECT:" in full_reply:
+            parts = full_reply.split("||REDIRECT:")
+            full_reply = parts[0].strip()
+            raw_target = parts[1].strip().lower()
+            valid_pages = ["about", "ongoing", "artwork", "tech", "services", "splash"]
+            for page in valid_pages:
+                if page in raw_target:
+                    nav_target = page
+                    break
+            if not nav_target: nav_target = re.sub(r'[^a-z]', '', raw_target)
+            logger.nav(f"Redirecting user to: {nav_target}")
+
+        split_replies = split_into_sentences(full_reply)
 
         return ChatResponse(
-            reply=reply,
-            page=request.page_context
+            reply=split_replies, 
+            page=request.page_context,
+            navigation_target=nav_target,
+            detected_language=detected_lang
         )
 
     except Exception as e:
         logger.error(f"Chat error: {e}")
         raise HTTPException(status_code=500, detail="Chat processing failed")
 
-
-@app.post("/api/email")
-async def send_email(request: dict):
-    """
-    Email endpoint to replace the PHP form handler
-    Sends contact form submissions
-    """
-    try:
-        # Email handling will go here
-        logger.info(f"Email received from: {request.get('email')}")
-        return {"status": "success", "message": "Email submitted"}
-    except Exception as e:
-        logger.error(f"Email error: {e}")
-        raise HTTPException(status_code=500, detail="Email submission failed")
-
-
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8001,
-        log_level="info"
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8001, log_level="info")
