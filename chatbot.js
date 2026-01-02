@@ -52,8 +52,7 @@ class FreddyChatbot {
         @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
 
         @font-face {
-          font-family: 'LEDLIGHT';
-          src: url('/fonts/LEDLIGHT.otf') format('opentype');
+          font-family: 'Courier Prime';
         }
 
         #freddy-chat-bubble {
@@ -61,7 +60,7 @@ class FreddyChatbot {
           bottom: 20px;
           right: 20px;
           z-index: 100000;
-          font-family: 'LEDLIGHT', 'Courier Prime', monospace;
+          font-family:'Courier Prime', monospace;
           font-size: 14px;
         }
 
@@ -130,7 +129,7 @@ class FreddyChatbot {
           font-weight: bold;
           text-align: center;
           border-bottom: 2px solid #00ff00;
-          font-family: 'LEDLIGHT', monospace;
+          font-family: 'Courier Prime', monospace;
           font-size: 16px;
         }
 
@@ -294,7 +293,7 @@ class FreddyChatbot {
       
       <div class="chat-window" id="chat-window">
         <div class="chat-header">
-          FREDDY.ai v1.0 <span class="cursor"></span>
+          Non-GMO Clone at your service <span class="cursor"></span>
         </div>
         <div class="chat-messages" id="chat-messages"></div>
         <div class="chat-input-area">
