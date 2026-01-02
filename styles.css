@@ -3202,13 +3202,30 @@
 
         /* Header Section with foam2 background */
         .elprimo-header {
-            padding: 80px 100px 60px 100px;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 100px 60px 100px;
+            min-height: 400px;
+        }
+
+        .elprimo-header-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
         }
 
         .elprimo-logo-container {
             text-align: center;
             margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
         }
 
         .elprimo-logo-container img {
@@ -3228,6 +3245,8 @@
             margin-bottom: 40px;
             transition: all 0.3s ease;
             font-weight: 700;
+            position: relative;
+            z-index: 2;
         }
 
         .elprimo-link:hover {
@@ -3497,7 +3516,7 @@
         }
 
         .elprimo-tech-item::after {
-            content: 'â€¢';
+            content: '·';
             position: absolute;
             right: -10px;
             color: #ff0032;
@@ -3889,7 +3908,7 @@
         }
 
         .masto-tech-item::after {
-            content: 'â€¢';
+            content: '·';
             position: absolute;
             right: -10px;
             color: #70ac8b;
