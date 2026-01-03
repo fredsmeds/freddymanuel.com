@@ -523,9 +523,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     const formData = new FormData(contactForm);
                     
                     // Send via fetch
-                    fetch('https://freddy-backend.onrender.com/api/contact', { // (Use your REAL Render URL)
+                    fetch('https://freddy-backend-v10h.onrender.com/api/contact', {
                         method: 'POST',
-                        body: formData
+                        body: JSON.stringify(Object.fromEntries(formData)), // Convert FormData to JSON
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
                     })
                     .then(response => response.json())
                     .then(data => {
