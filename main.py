@@ -1,9 +1,8 @@
 """
 Freddy's Web Portfolio - AI Chatbot Backend
-Version 1.16.1
-- Fix: Enhanced keyword detection for Spanish/Portuguese (accents, synonyms).
-- Fix: Prevented Search Generator from "chatting" instead of querying.
-- Logic: "Trabajos tecnicos" now forces immediate redirect to 'tech'.
+Version 1.17.0 (Cloud Deployment)
+- Feature: Added Contact Form Emailer (Replaces PHP).
+- Preserved: Multilingual greetings, Personas, and Advanced Search Logic.
 """
 
 from fastapi import FastAPI, HTTPException
@@ -22,7 +21,12 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List, Optional, Dict
 import re
-import unicodedata # NEW: For handling accents
+import unicodedata
+
+# --- NEW IMPORTS FOR EMAIL ---
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # Load environment variables
 load_dotenv()
@@ -42,11 +46,11 @@ logging.setLoggerClass(BrainLogger)
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger("freddy_brain")
 
-app = FastAPI(title="Freddy's Portfolio Chatbot", version="1.16.1")
+app = FastAPI(title="Freddy's Portfolio Chatbot", version="1.17.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"], # Allow Cloudflare to access this
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,7 +62,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 vector_store = None
 all_documents = []
 
-# --- MULTILINGUAL GREETINGS ---
+# --- MULTILINGUAL GREETINGS (PRESERVED) ---
 PAGE_GREETINGS = {
     "about": {
         "en": [
@@ -108,7 +112,55 @@ class ChatResponse(BaseModel):
     navigation_target: Optional[str] = None
     detected_language: Optional[str] = "en"
 
-# --- DOCUMENT LOADING FUNCTIONS ---
+# --- NEW CONTACT FORM MODEL ---
+class ContactForm(BaseModel):
+    name: str
+    email: str 
+    phone: Optional[str] = "Not provided"
+    project_type: Optional[str] = "General"
+    message: str
+
+# --- NEW EMAIL FUNCTION ---
+def send_email_notification(data: ContactForm):
+    gmail_user = os.getenv("GMAIL_USER")
+    gmail_pass = os.getenv("GMAIL_PASSWORD")
+    
+    if not gmail_user or not gmail_pass:
+        logger.error("❌ Gmail credentials not set in environment variables.")
+        return False
+
+    msg = MIMEMultipart()
+    msg['From'] = gmail_user
+    msg['To'] = gmail_user # Send to yourself
+    msg['Subject'] = f"🚀 New Portfolio Lead: {data.name}"
+    msg['Reply-To'] = data.email
+
+    body = f"""
+    New contact from FreddyManuel.com:
+    
+    👤 Name: {data.name}
+    📧 Email: {data.email}
+    📱 Phone: {data.phone}
+    🏗️ Project: {data.project_type}
+    
+    📝 Message:
+    {data.message}
+    """
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(gmail_user, gmail_pass)
+        server.send_message(msg)
+        server.quit()
+        logger.info(f"✅ Email sent for {data.name}")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Email failed: {e}")
+        return False
+
+# --- DOCUMENT LOADING FUNCTIONS (PRESERVED) ---
 def load_pdf(file_path: str) -> str:
     try:
         reader = PdfReader(file_path)
@@ -217,7 +269,7 @@ def initialize_vector_store():
         logger.error(f"Failed to initialize vector store: {e}")
         return False
 
-# --- INTELLIGENT RETRIEVAL LOGIC ---
+# --- INTELLIGENT RETRIEVAL LOGIC (PRESERVED) ---
 def generate_search_variations(query: str) -> List[str]:
     variations = []
     q_lower = query.lower()
@@ -308,6 +360,10 @@ def detect_project_redirect(message: str) -> Optional[str]:
 async def startup_event():
     logger.info("🚀 Starting Freddy's Chatbot...")
     initialize_vector_store()
+
+@app.get("/")
+def home():
+    return {"status": "online", "message": "Freddy's Brain is Running"}
 
 @app.get("/api/welcome/{page}")
 async def get_page_welcome(page: str, lang: str = "en"):
@@ -418,6 +474,28 @@ Current Page: {request.page_context}
     except Exception as e:
         logger.error(f"Chat error: {e}")
         raise HTTPException(status_code=500, detail="Chat processing failed")
+
+# --- NEW CONTACT ENDPOINT ---
+@app.post("/api/contact")
+async def submit_contact_form(form: ContactForm):
+    logger.info(f"📨 Contact Form received from {form.name}")
+    
+    # Map 'other' or codes to readable text
+    project_map = {
+        "ai-ml": "AI & Machine Learning",
+        "web-dev": "Web Development",
+        "branding": "Branding Strategy",
+        "creative-production": "Creative Production"
+    }
+    form.project_type = project_map.get(form.project_type, form.project_type)
+
+    success = send_email_notification(form)
+    
+    if success:
+        return {"success": True, "message": "Message sent! Freddy will contact you soon."}
+    else:
+        # Return success=False to let frontend handle the error UI
+        return {"success": False, "message": "Server email error. Please email fmroldanrivero@gmail.com directly."}
 
 if __name__ == "__main__":
     import uvicorn
