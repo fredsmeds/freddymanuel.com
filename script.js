@@ -523,7 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const formData = new FormData(contactForm);
                     
                     // Send via fetch
-                    fetch('send-contact.php', {
+                    fetch('https://freddy-backend.onrender.com/api/contact', { // (Use your REAL Render URL)
                         method: 'POST',
                         body: formData
                     })

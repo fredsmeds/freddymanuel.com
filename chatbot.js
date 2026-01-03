@@ -16,7 +16,7 @@ class FreddyChatbot {
       this.lastGreetingTime = 0;
       this.currentLanguage = "en"; 
       
-      this.apiUrl = "http://localhost:8001/api"; 
+      this.apiUrl = "https://freddy-backend.onrender.com/api"; // (Use your REAL Render URL)
       
       // Define the SVG icon constant for reuse
       this.chatIconSVG = `
